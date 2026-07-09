@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const db = require("./src/config/db.js");
 const port = 3000;
+app.use(express.static('public'));
 
 app.use(express.json());
 
@@ -25,5 +26,19 @@ app.post("/add-clothes", (req, res) => {
             return res.status(500).send("保存に失敗しました");
         }
         res.send("服を登録しました");
+    });
+});
+
+
+// 服の一覧を取る機能
+app.get("/get-clothes", (req, res) => {
+    const sql = "SELECT * FROM clothes";
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("取得に失敗しました");
+        }
+        res.json(results);
     });
 });

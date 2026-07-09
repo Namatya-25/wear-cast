@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>洋服一覧</title>
+</head>
+<body>
+    <h1>洋服一覧</h1>
+    <ul id="clothes-list">
+        <!-- ここにデータが並ぶ -->
+    </ul>
+
+    <script>
+        // APIからデータを取ってきて画面に表示する命令
+        fetch('/get-clothes')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('clothes-list');
+                data.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = `${item.name} (${item.category})`;
+                    list.appendChild(li);
+                });
+            });
+    </script>
+</body>
+</html>
