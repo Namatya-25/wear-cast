@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>洋服登録</title>
+</head>
+
+<body>
+    <h1>新しい服を登録する</h1>
+    <a href="list.html">戻る</a>
+
+    <input type="text" id="name" placeholder="名前">
+    <input type="text" id="category" placeholder="カテゴリー">
+    <button onclick="save()">登録する</button>
+
+    <script>
+        function save() {
+            const name = document.getElementById('name').value;
+            const category = document.getElementById('category').value;
+            fetch('/add-clothes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, category })
+            }).then(() => {
+                alert('登録しました！');
+                window.location.href = 'list.html'; // 登録後に一覧へ戻る
+            });
+        }
+    </script>
+</body>
+
+</html>
