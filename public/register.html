@@ -17,15 +17,18 @@
 
     <script>
         function save() {
-            const name = document.getElementById('name').value;
-            const category = document.getElementById('category').value;
-            fetch('/add-clothes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, category })
+            const name = document.getElementById("name").value;
+            const category = document.getElementById("category").value;
+            fetch("/add-clothes", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({name, category})
             }).then(() => {
-                alert('登録しました！');
-                window.location.href = 'list.html'; // 登録後に一覧へ戻る
+                alert("登録しました！");
+                window.location.href = "list.html";
+            }).catch((error) => {
+                console.error("エラー:", error);
+                alert("エラーが発生しました");
             });
         }
     </script>
