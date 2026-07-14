@@ -1,23 +1,41 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <title>洋服登録</title>
 </head>
+
 <body>
     <h1>新しい服を登録する</h1>
     <a href="list.html">戻る</a>
 
     <input type="file" id="image">
     <input type="text" id="name" placeholder="名前">
-    <input type="text" id="category" placeholder="カテゴリー">
+
+    <select id="category">
+        <option value="" selected disabled>カテゴリー選択</option>
+        <option value="トップス">トップス（Tシャツ、シャツ、ニットなど）</option>
+        <option value="アウター">アウター（ジャケット、コート、ダウンなど）</option>
+        <option value="ボトムス">ボトムス（ジーンズ、チノパン、スカートなど）</option>
+    </select>
+
+    <select id="temperature">
+        <!-- 初期表示用（選択はできないようにする） -->
+        <option value="" selected disabled>温度選択</option>
+        <option value="暑い日用（25°C以上）">☀️ 暑い日用（25°C以上：半袖など）</option>
+        <option value="暖かい日用（21°C~24°C）">🍃 暖かい日用（21°C~24°C：長袖シャツなど）</option>
+        <option value="肌寒い日用（16°C~20°C）">🍁 肌寒い日用（16°C~20°C：パーカー、薄手アウターなど）</option>
+        <option value="寒い日用（15°C以下）">❄️ 寒い日用（15°C以下：厚手コート、ダウンなど）</option>
+    </select>
+
     <button onclick="save()">登録する</button>
 
     <script>
         function save() {
             // 画像ファイルを取得
-            const  imageFile = document.getElementById("image").files[0];
-            
+            const imageFile = document.getElementById("image").files[0];
+
             // 画像が選択されているかチェック
             if (!imageFile) {
                 alert("画像を選択してください！");
@@ -29,11 +47,14 @@
             formData.append("name", document.getElementById("name").value);
             formData.append("category", document.getElementById("category").value);
             formData.append("image", imageFile);
+            formData.append("temperature", document.getElementById("temperature").value);
+
+
 
             // fetchで送信（※重要：headersのContent-Typeは「書かない」のがコツです）
             fetch("/add-clothes", {
                 method: "POST",
-                body: formData 
+                body: formData
             }).then(() => {
                 alert("登録しました！");
                 window.location.href = "list.html";
@@ -44,4 +65,5 @@
         }
     </script>
 </body>
+
 </html>

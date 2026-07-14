@@ -19,12 +19,12 @@ app.listen(port, () => {
 
 //画像アップロード機能付きの登録API
 app.post("/add-clothes", upload.single("image"), (req, res) => {
-    const {name, category} = req.body;
+    const {name, category, temperature} = req.body;
     const imagePath = req.file ? "/uploads/" + req.file.filename : null;
 
-    const sql = "INSERT INTO clothes (name, category, image_path) VALUES (?, ?, ?)";
+    const sql = "INSERT INTO clothes (name, category, temperature, image_path) VALUES (?, ?, ?, ?)";
 
-    db.query(sql, [name, category, imagePath], (err, result) => {
+    db.query(sql, [name, category, temperature, imagePath], (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("保存に失敗しました");
