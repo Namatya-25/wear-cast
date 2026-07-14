@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const db = require("./src/config/db.js");
 const port = 3000;
+const multer = require("multer");
+const upload = multer({ dest: "public/uploads/"});
 app.use(express.static('public'));
 
 app.use(express.json());
@@ -15,12 +17,14 @@ app.listen(port, () => {
     console.log(`サーバがポート ${port} で起動しました`)
 });
 
-//データを登録する機能 多分仮
-app.post("/add-clothes", (req, res) => {
+//画像アップロード機能付きの登録API
+app.post("/add-clothes", upload.single("image"), (req, res) => {
     const {name, category} = req.body;
-    const sql = "INSERT INTO clothes (name, category) VALUES (?, ?)";
+    const imagePath = req.file ? "/uploads/" + req.file.filename : null;
 
-    db.query(sql, [name, category], (err, result) => {
+    const sql = "INSERT INTO clothes (name, category, image_path) VALUES (?, ?, ?)";
+
+    db.query(sql, [name, category, imagePath], (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("保存に失敗しました");

@@ -1,37 +1,47 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>洋服登録</title>
 </head>
-
 <body>
     <h1>新しい服を登録する</h1>
     <a href="list.html">戻る</a>
 
+    <input type="file" id="image">
     <input type="text" id="name" placeholder="名前">
     <input type="text" id="category" placeholder="カテゴリー">
     <button onclick="save()">登録する</button>
 
     <script>
         function save() {
-            const name = document.getElementById("name").value;
-            const category = document.getElementById("category").value;
+            // 画像ファイルを取得
+            const  imageFile = document.getElementById("image").files[0];
+            
+            // 画像が選択されているかチェック
+            if (!imageFile) {
+                alert("画像を選択してください！");
+                return; // ここで処理を止める
+            }
+
+            // FormDataを使うことで、画像とテキストを一緒に送れます
+            const formData = new FormData();
+            formData.append("name", document.getElementById("name").value);
+            formData.append("category", document.getElementById("category").value);
+            formData.append("image", imageFile);
+
+            // fetchで送信（※重要：headersのContent-Typeは「書かない」のがコツです）
             fetch("/add-clothes", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({name, category})
+                body: formData 
             }).then(() => {
                 alert("登録しました！");
                 window.location.href = "list.html";
             }).catch((error) => {
                 console.error("エラー:", error);
-                alert("エラーが発生しました");
+                alert("登録に失敗しました");
             });
         }
     </script>
 </body>
-
 </html>

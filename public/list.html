@@ -10,8 +10,8 @@
 <body>
     <h1>洋服一覧</h1>
     <a href="register.html">新しい服を登録する</a> <!-- 遷移リンク -->
-     <ul id="clothes-list"></ul>
-     
+    <ul id="clothes-list"></ul>
+
     <script>
         fetch('/get-clothes')
             .then(res => res.json())
@@ -20,6 +20,15 @@
                 data.forEach(item => {
                     const li = document.createElement('li');
                     li.textContent = `${item.name} (${item.category})`;
+
+                    // 画像がある場合だけ表示する処理
+                    let imgTag = "";
+                    if (item.image_path) {
+                        imgTag = `<img src="${item.image_path}" style="width: 100px; display: block">`;
+                    }
+
+                    li.innerHTML = `${imgTag}<p>${item.name}</p>`;
+
                     list.appendChild(li);
                 });
             });
