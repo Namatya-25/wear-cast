@@ -1,20 +1,32 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WearCast ホーム</title>
+    <script src="https://kit.fontawesome.com/d4772c3c4b.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>WearCast</h1>
-    
-    <!-- ここに長生村の天気情報を入れる予定の場所 -->
-    <div id="weather-area">
-        <p>長生村 23° 晴れ</p>
-    </div>
 
-    <nav>
-        <a href="list.html">洋服一覧</a> | 
-        <a href="register.html">洋服登録</a>
-    </nav>
+<body class="bg-gray-100 min-h-screen">
+    <div class="min-h-screen bg-gray-100 flex justify-center">
+        <div class="w-full max-w-2xl bg-white shadow-sm border border-gray-200">
+            <header class="bg-cyan-100 px-6 py-4 flex justify justify-between">
+                <a href="index.html" class="text-gray-800 text-xl font-medium">WearCast</a>
+                <nav class="">
+                    <a href="list.html" class="mr-3">洋服一覧</a>
+                    <a href="register.html">洋服登録</a>
+                </nav>
+            </header>
+            <main>
+                <!-- ここに長生村の天気情報を入れる予定の場所 -->
+                <div id="weather-area">
+                    <p>長生村 23° 晴れ</p>
+                </div>
+            </main>
+        </div>
+    </div>
 </body>
+
 </html>
