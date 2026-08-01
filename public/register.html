@@ -23,14 +23,32 @@
                         <label class="block text-sm font-medium text-gray-800 mb-3">・画像登録</label>
                         <div class="block md:flex items-start gap-8">
                             <div class="space-y-3 mb-5 md:mb-0">
-                                <input type="file" id="image">
-                                <div>
-                                    <img src="" alt="">
+                                <!-- 【書き直し1】labelで囲み、カスタムボタンのデザインにする -->
+                                <label
+                                    class="flex items-center justify-center w-48 px-4 py-2 bg-gray-200 text-gray-800 rounded cursor-pointer hover:bg-gray-300 transition">
+                                    <span>アップロード</span>
+                                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                    </svg>
+
+                                    <!-- 【書き直し2】hiddenとonchangeを追加 -->
+                                    <input type="file" id="image" class="hidden" accept="image/*"
+                                        onchange="previewImage(event)">
+                                </label>
+
+                                <!-- 【書き直し3】プレビュー枠の大きさを指定し、id="preview" を追加 -->
+                                <div
+                                    class="w-40 h-40 border-2 border-black flex items-center justify-center overflow-hidden bg-white">
+                                    <img id="preview" src="" alt="プレビュー" class="hidden object-cover w-full h-full">
+                                    <span id="placeholder" class="text-xs text-gray-400">No image</span>
                                 </div>
                             </div>
                             <div>
                                 <div class="w-64">
-                                    <select id="category" class="outline-none bg-gray-300 px-4 py-2 mb-2 inline-block w-full">
+                                    <select id="category"
+                                        class="outline-none bg-gray-300 px-4 py-2 mb-2 inline-block w-full">
                                         <option value="" selected disabled>カテゴリー選択</option>
                                         <option value="トップス">トップス（Tシャツ、シャツ、ニットなど）</option>
                                         <option value="アウター">アウター（ジャケット、コート、ダウンなど）</option>
@@ -39,7 +57,8 @@
                                 </div>
 
                                 <div class="w-64">
-                                    <select id="temperature" class="outline-none bg-gray-300 px-4 py-2 inline-block w-full">
+                                    <select id="temperature"
+                                        class="outline-none bg-gray-300 px-4 py-2 inline-block w-full">
                                         <!-- 初期表示用（選択はできないようにする） -->
                                         <option value="" selected disabled>温度選択</option>
                                         <option value="暑い日用（25°C以上）">☀️ 暑い日用（25°C以上：半袖など）</option>
@@ -54,7 +73,8 @@
                     </div>
                     <div>
                         <label for="" class="inline-block mb-2">・洋服の名前</label>
-                        <input type="text" id="name" placeholder="例）半袖Tシャツ" class="block outline-none border-4 border-gray-400 w-full px-5 py-2">
+                        <input type="text" id="name" placeholder="例）半袖Tシャツ"
+                            class="block outline-none border-4 border-gray-400 w-full px-5 py-2">
                     </div>
 
                     <div class="flex justify-center">
@@ -97,6 +117,33 @@
                 alert("登録に失敗しました");
             });
         }
+
+
+        // 画像登録の写真を表示する
+        function previewImage(event) {
+            // 選択した画像ファイルのデータを取得
+            const file = event.target.files[0];
+
+            //imgタグを取得
+            const preview = document.getElementById("preview");
+
+            //spanタグを取得
+            const placeholder = document.getElementById("placeholder");
+
+            //ファイルが選択されたか確認
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove("hidden");
+                    if (placeholder) placeholder.classList.add("hidden");
+                }
+
+                //filereaderを動かすための命令
+                reader.readAsDataURL(file);
+            }
+        }
+
     </script>
 </body>
 
