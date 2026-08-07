@@ -3,3 +3,9 @@
     width: calc(25% - 15px);
     box-sizing: border-box;
 }
+
+@media (max-width: 768px) {
+    .card-style {
+        width: calc(50% - 15px);
+    }
+}
