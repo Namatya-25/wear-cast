@@ -46,3 +46,28 @@ app.get("/get-clothes", (req, res) => {
         res.json(results);
     });
 });
+
+
+
+//詳細画面の取得用エンドポイント（最終的にjsonを返す）
+app.get("/api/clothes/:id", (req, res) => {
+    // そのidの行のデータをすべて取得(nameとかcategoryとか)
+    const sql = "SELECT * FROM clothes WHERE id = ?";
+    db.query(sql, [req.params.id], (err, result) => {
+        if(err) {
+            console.error(err);
+            return res.status(500).send("エラーが発生しました");
+        }
+        if(result.length === 0) {
+            return res.status(404).send("見つかりません");
+        }
+        res.json(result[0]);
+    });
+});
+
+
+
+
+
+
+
