@@ -133,3 +133,47 @@ app.delete("/api/clothes/:id", (req, res) => {
 
 
 
+//ホーム画面の天気API（都市名 → 緯度経度 → 現在の気温と天気）
+//緯度経度はNominatim(OpenStreetMap)、天気はOpen-Meteoから取得（どちらもAPIキー不要）
+const weatherNames = {
+    0: "快晴", 1: "晴れ", 2: "晴れ時々曇り", 3: "曇り",
+    45: "霧", 48: "霧",
+    51: "霧雨", 53: "霧雨", 55: "霧雨", 56: "霧雨", 57: "霧雨",
+    61: "雨", 63: "雨", 65: "大雨", 66: "雨", 67: "大雨",
+    71: "雪", 73: "雪", 75: "大雪", 77: "雪",
+    80: "にわか雨", 81: "にわか雨", 82: "強いにわか雨",
+    85: "にわか雪", 86: "にわか雪",
+    95: "雷雨", 96: "雷雨", 99: "雷雨"
+};
+
+app.get("/api/weather", async (req, res) => {
+    const city = req.query.city;
+    if (!city) {
+        return res.status(400).send("都市名を入力してください");
+    }
+
+    try {
+        // 都市名をurlに変換
+        const geoUrl = "https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ja&q=" + encodeURIComponent(city);
+        // 身分証明書の提示
+        const geoRes = await fetch(geoUrl, { headers: { "User-Agent": "wear-cast" } });
+        const places = await geoRes.json();
+        if (places.length === 0) {
+            return res.status(404).send("都市が見つかりません");
+        }
+        const place = places[0];
+
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${place.lat}&longitude=${place.lon}&current=temperature_2m,weather_code&timezone=auto`;
+        const weatherRes = await fetch(weatherUrl);
+        const weather = await weatherRes.json();
+
+        res.json({
+            city: place.display_name.split(",")[0],
+            temperature: Math.round(weather.current.temperature_2m),
+            weather: weatherNames[weather.current.weather_code] || "不明"
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("天気の取得に失敗しました");
+    }
+});

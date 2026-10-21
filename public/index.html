@@ -19,12 +19,55 @@
                     <a href="register.html">洋服登録</a>
                 </nav>
             </header>
-            <main>
-                <!-- ここに長生村の天気情報を入れる予定の場所 -->
-                <div id="weather-area">
-                    <p>長生村 23° 晴れ</p>
+            <main class="px-8 py-10">
+                <!-- 都市検索ボックス -->
+                <form id="search-form" class="w-full max-w-64 mb-6 ml-6">
+                    <div class="flex items-center bg-gray-200 rounded-full px-4 py-2">
+                        <i class="fa-solid fa-magnifying-glass text-gray-700 text-sm"></i>
+                        <input id="city-input" type="text" placeholder="都市を検索"
+                            class="bg-transparent ml-3 text-sm w-full outline-none placeholder-gray-500">
+                    </div>
+                </form>
+
+                <!-- 天気表示エリア -->
+                <div id="weather-area" class="w-full max-w-80 aspect-square bg-gray-300 flex flex-col items-center justify-center">
+                    <p id="weather-city" class="text-4xl font-medium"></p>
+                    <p id="weather-temperature" class="text-7xl font-bold my-3"></p>
+                    <p id="weather-text" class="text-2xl"></p>
+                    <p id="weather-error" class="text-red-600"></p>
                 </div>
             </main>
+            <script>
+                //都市名からサーバー経由で天気を取得して表示(server.jsの/api/weatherに対応)
+                function showWeather(city) {
+                    document.getElementById("weather-error").textContent = "";
+
+                    fetch(`/api/weather?city=${encodeURIComponent(city)}`)
+                        .then(res => {
+                            if (!res.ok) return res.text().then(msg => { throw new Error(msg); });
+                            return res.json();
+                        })
+                        .then(data => {
+                            document.getElementById("weather-city").textContent = data.city;
+                            document.getElementById("weather-temperature").textContent = data.temperature + "°";
+                            document.getElementById("weather-text").textContent = data.weather;
+                        })
+                        .catch(err => {
+                            console.error("天気取得エラー:", err);
+                            document.getElementById("weather-error").textContent = err.message;
+                        });
+                }
+
+                //検索ボックスでEnterを押したら検索
+                document.getElementById("search-form").addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    const city = document.getElementById("city-input").value.trim();
+                    if (city) showWeather(city);
+                });
+
+                //最初は東京を表示
+                showWeather("東京");
+            </script>
         </div>
     </div>
 </body>
