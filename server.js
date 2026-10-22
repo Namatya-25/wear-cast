@@ -24,6 +24,12 @@ app.post("/add-clothes", upload.single("image"), (req, res) => {
     const {name, category, temperature} = req.body;
     const imagePath = req.file ? "/uploads/" + req.file.filename : null;
 
+    // 必須項目のチェック（名前・服の種類・温度）
+    if (!name || !name.trim() || !category || !temperature) {
+        return res.status(400).send("名前・カテゴリー・温度は必須です");
+    }
+
+
     const sql = "INSERT INTO clothes (name, category, temperature, image_path) VALUES (?, ?, ?, ?)";
 
     db.query(sql, [name, category, temperature, imagePath], (err, result) => {

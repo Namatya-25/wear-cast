@@ -95,12 +95,30 @@
                 return; // ここで処理を止める
             }
 
+            // 必須項目（名前・服の種類・温度）が入力されているかチェック
+            const name = document.getElementById("name").value.trim();
+            const category = document.getElementById("category").value;
+            const temperature = document.getElementById("temperature").value;
+
+            if (!category) {
+                alert("カテゴリーを選択してください！");
+                return;
+            }
+            if (!temperature) {
+                alert("温度を選択してください！");
+                return;
+            }
+            if (!name) {
+                alert("洋服の名前を入力してください！");
+                return;
+            }
+
             // FormDataを使うことで、画像とテキストを一緒に送れます
             const formData = new FormData();
-            formData.append("name", document.getElementById("name").value);
-            formData.append("category", document.getElementById("category").value);
+            formData.append("name", name);
+            formData.append("category", category);
             formData.append("image", imageFile);
-            formData.append("temperature", document.getElementById("temperature").value);
+            formData.append("temperature", temperature);
 
 
 
@@ -108,7 +126,11 @@
             fetch("/add-clothes", {
                 method: "POST",
                 body: formData
-            }).then(() => {
+            }).then((res) => {
+                // サーバー側でエラーになった場合はここで止める
+                if (!res.ok) {
+                    return res.text().then((message) => alert(message));
+                }
                 alert("登録しました！");
                 window.location.href = "list.html";
             }).catch((error) => {

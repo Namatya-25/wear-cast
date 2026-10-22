@@ -19,32 +19,94 @@
             <main class="px-8 py-10">
                 <h1 class="text-2xl font-medium text-center text-gray-900 mb-12">洋服一覧</h1>
                 <ul id="clothes-list" class="flex flex-wrap gap-5"></ul>
+                <nav id="pagination" class="flex justify-center gap-2 mt-10"></nav>
             </main>
         </div>
     </div>
 
     <script>
+        // 1ページに表示する行数（4行目以降は次のページへ）
+        const ROWS_PER_PAGE = 3;
+        let clothes = [];
+        let currentPage = 1;
+
+        // 1行あたりの枚数（style.cssのcard-styleに合わせる：PCは4枚、768px以下は2枚）
+        const mobileQuery = window.matchMedia("(max-width: 768px)");
+        function getItemsPerPage() {
+            const columns = mobileQuery.matches ? 2 : 4;
+            return columns * ROWS_PER_PAGE;
+        }
+
+        // 現在のページの服を表示する
+        function renderList() {
+            const list = document.getElementById("clothes-list");
+            list.innerHTML = "";
+
+            const perPage = getItemsPerPage();
+            const start = (currentPage - 1) * perPage;
+            clothes.slice(start, start + perPage).forEach(item => {
+                const li = document.createElement("li");
+                li.classList.add("card-style");
+
+                let imgTag = "";
+                if (item.image_path) {
+                    imgTag = `<img src="${item.image_path}" style="display: block; width: 100%; height: 150px; object-fit: cover;">`;
+                }
+
+                li.innerHTML = `
+                        <a href="detail.html?id=${item.id}" class="block p-2 border rounded         hover:bg-gray-100 transition ease-in">
+                        ${imgTag}<p style="text-align: center;">${item.name}</p>
+                    </a>`;
+
+                list.appendChild(li);
+            });
+
+            renderPagination();
+        }
+
+        // ページネーションのボタンを表示する
+        function renderPagination() {
+            const pagination = document.getElementById("pagination");
+            pagination.innerHTML = "";
+
+            const totalPages = Math.ceil(clothes.length / getItemsPerPage());
+            // 1ページに収まる場合はページネーションを出さない
+            if (totalPages <= 1) return;
+
+            const createButton = (label, page, disabled, active) => {
+                const button = document.createElement("button");
+                button.textContent = label;
+                button.disabled = disabled;
+                button.className = "min-w-9 px-3 py-1 rounded border "
+                    + (active ? "bg-cyan-100 border-cyan-300 font-medium" : "bg-white border-gray-300 hover:bg-gray-100")
+                    + (disabled ? " opacity-40 cursor-not-allowed" : "");
+                button.addEventListener("click", () => {
+                    currentPage = page;
+                    renderList();
+                    window.scrollTo({ top: 0 });
+                });
+                pagination.appendChild(button);
+            };
+
+            createButton("‹", currentPage - 1, currentPage === 1, false);
+            for (let page = 1; page <= totalPages; page++) {
+                createButton(page, page, false, page === currentPage);
+            }
+            createButton("›", currentPage + 1, currentPage === totalPages, false);
+        }
+
+        // 画面幅が変わって1行の枚数が変わったら、1ページ目から表示し直す
+        mobileQuery.addEventListener("change", () => {
+            currentPage = 1;
+            renderList();
+        });
+
         fetch("/get-clothes")
             .then(res => res.json())
             .then(data => {
-                const list = document.getElementById("clothes-list");
-                data.forEach(item => {
-                    const li = document.createElement("li");
-                    li.classList.add("card-style");
-
-                    let imgTag = "";
-                    if (item.image_path) {
-                        imgTag = `<img src="${item.image_path}" style="display: block; width: 100%; height: 150px; object-fit: cover;">`;
-                    }
-
-                    li.innerHTML = `
-                            <a href="detail.html?id=${item.id}" class="block p-2 border rounded         hover:bg-gray-100 transition ease-in">
-                            ${imgTag}<p style="text-align: center;">${item.name}</p>
-                        </a>`;
-
-                    list.appendChild(li);
-                });
-            });               
+                clothes = data;
+                renderList();
+            });
     </script>
 </body>
 
