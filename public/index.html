@@ -29,12 +29,22 @@
                     </div>
                 </form>
 
-                <!-- 天気表示エリア -->
-                <div id="weather-area" class="w-full max-w-80 aspect-square bg-gray-300 flex flex-col items-center justify-center">
-                    <p id="weather-city" class="text-4xl font-medium"></p>
-                    <p id="weather-temperature" class="text-7xl font-bold my-3"></p>
-                    <p id="weather-text" class="text-2xl"></p>
-                    <p id="weather-error" class="text-red-600"></p>
+                <!-- 天気とおすすめコーディネート（スマホでは縦並び） -->
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- 天気表示エリア -->
+                    <div id="weather-area" class="w-full md:w-1/2 aspect-square bg-gray-300 flex flex-col items-center justify-center">
+                        <p id="weather-city" class="text-4xl font-medium"></p>
+                        <p id="weather-temperature" class="text-7xl font-bold my-3"></p>
+                        <p id="weather-text" class="text-2xl"></p>
+                        <p id="weather-error" class="text-red-600"></p>
+                    </div>
+
+                    <!-- おすすめコーディネート表示エリア -->
+                    <div class="w-full md:w-1/2 bg-gray-300 px-6 py-8 flex flex-col items-center justify-center">
+                        <h2 class="text-lg text-center leading-snug mb-6">今日のおすすめ<br>コーディネート</h2>
+                        <div id="recommend-list" class="w-full flex flex-col items-center gap-2"></div>
+                        <p id="recommend-error" class="text-red-600 text-sm"></p>
+                    </div>
                 </div>
             </main>
             <script>
@@ -51,11 +61,80 @@
                             document.getElementById("weather-city").textContent = data.city;
                             document.getElementById("weather-temperature").textContent = data.temperature + "°";
                             document.getElementById("weather-text").textContent = data.weather;
+                            showRecommend(data.temperature);
                         })
                         .catch(err => {
                             console.error("天気取得エラー:", err);
                             document.getElementById("weather-error").textContent = err.message;
                         });
+                }
+
+                //気温に合わせたおすすめの服を表示(server.jsの/api/recommendに対応)
+                function showRecommend(temperature) {
+                    const list = document.getElementById("recommend-list");
+                    const error = document.getElementById("recommend-error");
+                    list.innerHTML = "";
+                    error.textContent = "";
+
+                    fetch(`/api/recommend?temperature=${temperature}`)
+                        .then(res => {
+                            if (!res.ok) return res.text().then(msg => { throw new Error(msg); });
+                            return res.json();
+                        })
+                        .then(data => {
+                            // 表示する順番（アウターは20°C以下のときだけ返ってくる）
+                            const items = [
+                                { key: "outer", category: "アウター" },
+                                { key: "tops", category: "トップス" },
+                                { key: "bottoms", category: "ボトムス" }
+                            ].filter(({ key }) => key in data);
+
+                            items.forEach(({ key, category }, index) => {
+                                // 2着目以降の前に「＋」を入れる
+                                if (index > 0) {
+                                    const plus = document.createElement("p");
+                                    plus.textContent = "＋";
+                                    plus.className = "text-xl";
+                                    list.appendChild(plus);
+                                }
+                                list.appendChild(createRecommendItem(data[key], category));
+                            });
+                        })
+                        .catch(err => {
+                            console.error("おすすめ取得エラー:", err);
+                            error.textContent = err.message;
+                        });
+                }
+
+                //おすすめの服1着分の表示を作る（画像のみ）（登録が無ければメッセージを出す）
+                function createRecommendItem(item, category) {
+                    if (!item) {
+                        const empty = document.createElement("p");
+                        empty.textContent = `この気温の${category}が登録されていません`;
+                        empty.className = "text-sm text-gray-600 py-3";
+                        return empty;
+                    }
+
+                    // クリックで詳細画面へ
+                    const link = document.createElement("a");
+                    link.href = `detail.html?id=${item.id}`;
+                    link.title = item.name;
+                    link.className = "hover:opacity-70 transition";
+
+                    const imageBox = document.createElement("div");
+                    imageBox.className = "w-24 h-24 bg-white flex items-center justify-center overflow-hidden";
+                    if (item.image_path) {
+                        const img = document.createElement("img");
+                        img.src = item.image_path;
+                        img.alt = item.name;
+                        img.className = "w-full h-full object-cover";
+                        imageBox.appendChild(img);
+                    } else {
+                        imageBox.innerHTML = '<span class="text-xs text-gray-400">No image</span>';
+                    }
+
+                    link.appendChild(imageBox);
+                    return link;
                 }
 
                 //検索ボックスでEnterを押したら検索

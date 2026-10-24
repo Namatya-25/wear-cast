@@ -183,3 +183,41 @@ app.get("/api/weather", async (req, res) => {
         res.status(500).send("天気の取得に失敗しました");
     }
 });
+
+
+//ホーム画面のおすすめコーディネートAPI（気温 → 温度区分 → カテゴリーごとに1着ずつランダムに選ぶ）
+//温度区分の文字列は登録画面(register.html)の選択肢と同じにする
+function getTemperatureLabel(temperature) {
+    if (temperature >= 25) return "暑い日用（25°C以上）";
+    if (temperature >= 21) return "暖かい日用（21°C~24°C）";
+    if (temperature >= 16) return "肌寒い日用（16°C~20°C）";
+    return "寒い日用（15°C以下）";
+}
+
+app.get("/api/recommend", async (req, res) => {
+    const temperature = Number(req.query.temperature);
+    if (req.query.temperature === undefined || Number.isNaN(temperature)) {
+        return res.status(400).send("気温を指定してください");
+    }
+
+    const label = getTemperatureLabel(temperature);
+
+    // 20°C以下の日はアウターも追加する
+    const categories = { tops: "トップス", bottoms: "ボトムス" };
+    if (temperature <= 20) categories.outer = "アウター";
+
+    try {
+        const sql = "SELECT id, name, category, image_path FROM clothes WHERE temperature = ? AND category = ? ORDER BY RAND() LIMIT 1";
+        const result = { label };
+
+        // 服が登録されていないカテゴリーはnullにする
+        for (const [key, category] of Object.entries(categories)) {
+            const [rows] = await db.promise().query(sql, [label, category]);
+            result[key] = rows[0] || null;
+        }
+        res.json(result);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("おすすめの取得に失敗しました");
+    }
+});
