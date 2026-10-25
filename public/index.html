@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WearCast ホーム</title>
     <script src="https://kit.fontawesome.com/d4772c3c4b.js" crossorigin="anonymous"></script>
+    <!-- フォント：Zen Maru Gothic（Google Fonts・ヘッダーのナビだけに使う） -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -17,7 +21,7 @@
                     <img src="images/wearcast-icon-a-sunrise-tee.png" alt="WearCastのアイコン" class="w-8 h-8">
                     WearCast
                 </a>
-                <nav class="">
+                <nav class="font-medium font-['Zen_Maru_Gothic',sans-serif]">
                     <a href="list.html" class="mr-3">洋服一覧</a>
                     <a href="register.html">洋服登録</a>
                 </nav>
@@ -25,17 +29,20 @@
             <main class="px-8 py-10">
                 <!-- 都市検索ボックス -->
                 <form id="search-form" class="w-full max-w-64 mb-6 ml-6">
-                    <div class="flex items-center bg-gray-200 rounded-full px-4 py-2">
-                        <i class="fa-solid fa-magnifying-glass text-gray-700 text-sm"></i>
+                    <!-- 白い入力欄＋右端にえんじ色の検索ボタン（クリックでもEnterでも検索） -->
+                    <div class="flex items-stretch bg-white border-2 border-[#5C1A1B] rounded-md overflow-hidden">
                         <input id="city-input" type="text" placeholder="都市を検索"
-                            class="bg-transparent ml-3 text-sm w-full outline-none placeholder-gray-500">
+                            class="bg-transparent px-3 py-2 text-sm w-full outline-none placeholder-gray-400">
+                        <button type="submit" aria-label="検索" class="bg-[#5C1A1B] text-white px-3 hover:opacity-80 transition">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
                     </div>
                 </form>
 
                 <!-- 天気とおすすめコーディネート（スマホでは縦並び） -->
                 <div class="flex flex-col md:flex-row gap-6">
                     <!-- 天気表示エリア -->
-                    <div id="weather-area" class="w-full md:w-1/2 aspect-square bg-gray-300 flex flex-col items-center justify-center">
+                    <div id="weather-area" class="w-full md:w-1/2 aspect-square bg-white/70 flex flex-col items-center justify-center">
                         <p id="weather-city" class="text-4xl font-medium"></p>
                         <p id="weather-temperature" class="text-7xl font-bold my-3"></p>
                         <p id="weather-text" class="text-2xl"></p>
@@ -43,7 +50,7 @@
                     </div>
 
                     <!-- おすすめコーディネート表示エリア -->
-                    <div class="w-full md:w-1/2 bg-gray-300 px-6 py-8 flex flex-col items-center justify-center">
+                    <div class="w-full md:w-1/2 bg-white/70 px-6 py-8 flex flex-col items-center justify-center">
                         <h2 class="text-lg text-center leading-snug mb-6">今日のおすすめ<br>コーディネート</h2>
                         <div id="recommend-list" class="w-full flex flex-col items-center gap-2"></div>
                         <p id="recommend-error" class="text-red-600 text-sm"></p>
