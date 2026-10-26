@@ -9,3 +9,26 @@
         width: calc(50% - 15px);
     }
 }
+/* クリーム色の背景に紙の質感を重ねる */
+.paper-bg {
+    background-color: #FBF7EF;
+    background-image: url("images/paper-texture.jpeg");
+    background-blend-mode: multiply;
+}
+
+/* プルダウンを開いたときの選択肢は背景と同じクリーム色・黒文字にする */
+select option {
+    background-color: #FBF7EF;
+    color: #000000;
+    font-weight: normal;
+}
+
+/* プルダウンの下矢印を自前で描いて、右側に余白をとる */
+.select-arrow {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+}

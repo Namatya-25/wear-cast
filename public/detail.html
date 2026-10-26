@@ -7,16 +7,20 @@
     <title>詳細画面</title>
     <script src="https://kit.fontawesome.com/d4772c3c4b.js" crossorigin="anonymous"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body class="bg-gray-100 min-h-screen">
     <div class="min-h-screen bg-gray-100 flex justify-center">
-        <div class="w-full max-w-2xl bg-[#FBF7EF] shadow-sm border border-gray-200">
-            <header class="bg-cyan-100 px-6 py-4 flex justify justify-between">
-                <a href="list.html" class="text-gray-800 text-sm font-medium hover:underline">←戻る</a>
+        <div class="w-full max-w-2xl paper-bg shadow-sm border border-gray-200">
+            <header class="bg-sky-100 px-6 py-4 flex justify justify-between">
+                <a href="list.html" class="inline-flex items-center gap-1 text-gray-800 text-sm font-medium hover:opacity-60 transition"><i class="fa-solid fa-arrow-left"></i>戻る</a>
             </header>
             <main class="px-8 py-10">
-                <h1 class="text-2xl font-medium text-center text-gray-900 mb-12">洋服の詳細</h1>
+                <h1 class="text-2xl font-medium text-center text-gray-900 mb-12 font-['Zen_Maru_Gothic',sans-serif]">洋服の詳細</h1>
 
                 <!-- データ表示エリア -->
                 <div id="detail-container" class="flex flex-col items-center gap-7 md:flex-row md:items-start">
@@ -24,18 +28,28 @@
                         <img id="detail-image" class="w-full h-full object-cover border-2 border-gray-300 rounded"
                             src="" alt="画像">
                     </div>
-                    <div class="w-full md:w-auto md:mt-4">
-                        <div class="md:mt-7">
-                            <h2 id="detail-name" class="text-2xl font-bold pb-4"></h2>
-                            <h2 id="detail-category" class="text-2xl font-bold pb-4"></h2>
-                            <h2 id="detail-temperature" class="text-2xl font-bold"></h2>
-                        </div>
+                    <div class="w-full md:w-auto">
+                        <!-- 名前・カテゴリー・温度を表のように線で区切って表示 -->
+                        <table class="w-full border-collapse border-y-2 border-[#87ceeb]">
+                            <tr class="border-b-2 border-[#87ceeb]">
+                                <th class="text-right text-base font-medium text-gray-600 py-4 pl-3 pr-6 whitespace-nowrap">名前<span class="ml-1">:</span></th>
+                                <td id="detail-name" class="text-2xl font-bold py-4"></td>
+                            </tr>
+                            <tr class="border-b-2 border-[#87ceeb]">
+                                <th class="text-right text-base font-medium text-gray-600 py-4 pl-3 pr-6 whitespace-nowrap">カテゴリー<span class="ml-1">:</span></th>
+                                <td id="detail-category" class="text-2xl font-bold py-4"></td>
+                            </tr>
+                            <tr>
+                                <th class="text-right text-base font-medium text-gray-600 py-4 pl-3 pr-6 whitespace-nowrap">温度<span class="ml-1">:</span></th>
+                                <td id="detail-temperature" class="text-2xl font-bold py-4"></td>
+                            </tr>
+                        </table>
                         <div class="flex justify-center md:justify-end gap-4 md:gap-7 mt-10 md:mt-20">
                             <div class="flex justify-center">
-                                <button onclick="goEdit()" class="bg-gray-300 px-6 md:px-9 py-2 rounded-3xl whitespace-nowrap">編集する</button>
+                                <button onclick="goEdit()" class="bg-[#87ceeb] text-white font-bold hover:bg-[#6fc0e0] transition px-6 md:px-9 py-2 rounded-3xl whitespace-nowrap">編集する</button>
                             </div>
                             <div class="flex justify-center">
-                                <button onclick="deleteItem()" class="bg-gray-300 px-6 md:px-9 py-2 rounded-3xl whitespace-nowrap">
+                                <button onclick="deleteItem()" class="bg-[#87ceeb] text-white font-bold hover:bg-[#6fc0e0] transition px-6 md:px-9 py-2 rounded-3xl whitespace-nowrap">
                                     <span class="text-red-600">削除</span>する
                                 </button>
                             </div>
@@ -54,8 +68,8 @@
                     .then(res => res.json())
                     .then(item => {
                         document.getElementById("detail-image").src = item.image_path;
-                        document.getElementById('detail-name').textContent = "名前:" + item.name;
-                        document.getElementById('detail-category').textContent = "カテゴリー: " + item.category;
+                        document.getElementById('detail-name').textContent = item.name;
+                        document.getElementById('detail-category').textContent = item.category;
                         document.getElementById('detail-temperature').textContent = item.temperature;
                     })
 

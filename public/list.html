@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>一覧画面</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://kit.fontawesome.com/d4772c3c4b.js" crossorigin="anonymous"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,12 +15,12 @@
 
 <body class="bg-gray-100 min-h-screen">
     <div class="min-h-screen bg-gray-100 flex justify-center">
-        <div class="w-full max-w-2xl bg-[#FBF7EF] shadow-sm border border-gray-200">
-            <header class="bg-cyan-100 px-6 py-4 flex justify justify-between">
-                <a href="index.html" class="text-gray-800 text-sm font-medium hover:underline">←戻る</a>
+        <div class="w-full max-w-2xl paper-bg shadow-sm border border-gray-200">
+            <header class="bg-sky-100 px-6 py-4 flex justify justify-between">
+                <a href="index.html" class="inline-flex items-center gap-1 text-gray-800 text-sm font-medium hover:opacity-60 transition"><i class="fa-solid fa-arrow-left"></i>戻る</a>
             </header>
             <main class="px-8 py-10">
-                <h1 class="text-2xl font-medium text-center text-gray-900 mb-12">洋服一覧</h1>
+                <h1 class="text-2xl font-medium text-center text-gray-900 mb-12 font-['Zen_Maru_Gothic',sans-serif]">洋服一覧</h1>
                 <ul id="clothes-list" class="flex flex-wrap gap-5"></ul>
                 <nav id="pagination" class="flex justify-center gap-2 mt-10"></nav>
             </main>
