@@ -1,11 +1,9 @@
 const express = require("express");
 const app = express();
 const db = require("./src/config/db.js");
-const port = 3000;
-const multer = require("multer");
-const fs = require("fs");
-const path = require("path");
-const upload = multer({ dest: "public/uploads/"});
+// Renderではポート番号が環境変数PORTで渡される
+const port = process.env.PORT || 3000;
+const { upload, saveImage, deleteImage } = require("./src/config/storage.js");
 app.use(express.static('public'));
 
 app.use(express.json());
@@ -20,15 +18,21 @@ app.listen(port, () => {
 });
 
 //画像アップロード機能付きの登録API
-app.post("/add-clothes", upload.single("image"), (req, res) => {
+app.post("/add-clothes", upload.single("image"), async (req, res) => {
     const {name, category, temperature} = req.body;
-    const imagePath = req.file ? "/uploads/" + req.file.filename : null;
 
     // 必須項目のチェック（名前・服の種類・温度）
     if (!name || !name.trim() || !category || !temperature) {
         return res.status(400).send("名前・カテゴリー・温度は必須です");
     }
 
+    let imagePath;
+    try {
+        imagePath = await saveImage(req.file);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send("画像の保存に失敗しました");
+    }
 
     const sql = "INSERT INTO clothes (name, category, temperature, image_path) VALUES (?, ?, ?, ?)";
 
@@ -75,15 +79,22 @@ app.get("/api/clothes/:id", (req, res) => {
 
 
 //編集画面からの更新API（画像は新しく選ばれたときだけ差し替える）
-app.put("/api/clothes/:id", upload.single("image"), (req, res) => {
+app.put("/api/clothes/:id", upload.single("image"), async (req, res) => {
     const {name, category, temperature} = req.body;
 
     let sql = "UPDATE clothes SET name = ?, category = ?, temperature = ? WHERE id = ?";
     let values = [name, category, temperature, req.params.id];
 
     if (req.file) {
+        let imagePath;
+        try {
+            imagePath = await saveImage(req.file);
+        } catch (err) {
+            console.error(err);
+            return res.status(500).send("画像の保存に失敗しました");
+        }
         sql = "UPDATE clothes SET name = ?, category = ?, temperature = ?, image_path = ? WHERE id = ?";
-        values = [name, category, temperature, "/uploads/" + req.file.filename, req.params.id];
+        values = [name, category, temperature, imagePath, req.params.id];
     }
 
     db.query(sql, values, (err, result) => {
@@ -122,12 +133,7 @@ app.delete("/api/clothes/:id", (req, res) => {
             }
 
             // 画像ファイルを削除（ファイルが無くても服の削除は成功扱い）
-            if (imagePath) {
-                const filePath = path.join(__dirname, "public", imagePath);
-                fs.unlink(filePath, (err) => {
-                    if (err) console.error("画像の削除に失敗しました:", err);
-                });
-            }
+            deleteImage(imagePath);
             res.send("服を削除しました");
         });
     });

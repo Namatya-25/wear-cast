@@ -1,0 +1,14 @@
+-- 本番DB（TiDB Cloud）でテーブルを作るためのSQL
+-- TiDB CloudのSQL Editorに貼り付けて実行する
+CREATE DATABASE IF NOT EXISTS wear_cast_db;
+USE wear_cast_db;
+
+CREATE TABLE IF NOT EXISTS clothes (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  name varchar(255) NOT NULL,
+  category varchar(100) DEFAULT NULL,
+  created_at timestamp NOT NULL DEFAULT current_timestamp(),
+  image_path varchar(255) DEFAULT NULL,
+  temperature varchar(50) DEFAULT NULL,
+  PRIMARY KEY (id)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
