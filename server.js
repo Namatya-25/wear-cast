@@ -170,6 +170,36 @@ function getWeatherName(symbolCode) {
     return weatherNames[name] || "不明";
 }
 
+//一度調べた都市の緯度経度を覚えておく（Nominatimに同じ問い合わせを何度も送らないため）
+const placeCache = new Map();
+
+//都市名 → {name, lat, lon}（見つからなければnull）
+//まずNominatimで探し、Nominatimがエラーを返したらPhoton(同じOpenStreetMapのデータ)で探す
+//※RenderのIPはNominatimに断られることがあるので、予備を用意している
+async function findPlace(city) {
+    if (placeCache.has(city)) return placeCache.get(city);
+
+    let place;
+    try {
+        const geoUrl = "https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ja&q=" + encodeURIComponent(city);
+        const geoRes = await fetch(geoUrl, { headers: { "User-Agent": USER_AGENT } });
+        if (!geoRes.ok) throw new Error(`${geoRes.status} ${(await geoRes.text()).slice(0, 200)}`);
+        const places = await geoRes.json();
+        place = places[0] ? { name: places[0].display_name.split(",")[0], lat: places[0].lat, lon: places[0].lon } : null;
+    } catch (err) {
+        console.error("Nominatimのエラー（Photonで探しなおします）:", err.message);
+        const photonUrl = "https://photon.komoot.io/api/?limit=1&q=" + encodeURIComponent(city);
+        const photonRes = await fetch(photonUrl, { headers: { "User-Agent": USER_AGENT } });
+        if (!photonRes.ok) throw new Error(`Photonのエラー: ${photonRes.status}`);
+        const feature = (await photonRes.json()).features[0];
+        // Photonの座標は[経度, 緯度]の順
+        place = feature ? { name: feature.properties.name, lat: feature.geometry.coordinates[1], lon: feature.geometry.coordinates[0] } : null;
+    }
+
+    placeCache.set(city, place);
+    return place;
+}
+
 app.get("/api/weather", async (req, res) => {
     const city = req.query.city;
     if (!city) {
@@ -177,15 +207,10 @@ app.get("/api/weather", async (req, res) => {
     }
 
     try {
-        // 都市名をurlに変換
-        const geoUrl = "https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ja&q=" + encodeURIComponent(city);
-        // 身分証明書の提示
-        const geoRes = await fetch(geoUrl, { headers: { "User-Agent": USER_AGENT } });
-        const places = await geoRes.json();
-        if (places.length === 0) {
+        const place = await findPlace(city);
+        if (!place) {
             return res.status(404).send("都市が見つかりません");
         }
-        const place = places[0];
 
         // 緯度経度は小数点4桁までにする（MET Norwayの決まり）
         const lat = Number(place.lat).toFixed(4);
@@ -201,7 +226,7 @@ app.get("/api/weather", async (req, res) => {
         // timeseriesの先頭が今の時間の予報
         const now = weather.properties.timeseries[0].data;
         res.json({
-            city: place.display_name.split(",")[0],
+            city: place.name,
             temperature: Math.round(now.instant.details.air_temperature),
             weather: getWeatherName(now.next_1_hours.summary.symbol_code)
         });
