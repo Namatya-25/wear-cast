@@ -178,6 +178,11 @@ app.get("/api/weather", async (req, res) => {
         const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${place.lat}&longitude=${place.lon}&current=temperature_2m,weather_code&timezone=auto`;
         const weatherRes = await fetch(weatherUrl);
         const weather = await weatherRes.json();
+        // エラーのときは{error: true, reason: "..."}が返ってくるので、理由をログに出す
+        if (!weather.current) {
+            console.error("Open-Meteoのエラー:", weatherRes.status, weather.reason);
+            return res.status(502).send("天気の取得に失敗しました");
+        }
 
         res.json({
             city: place.display_name.split(",")[0],
