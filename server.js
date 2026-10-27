@@ -146,7 +146,7 @@ app.delete("/api/clothes/:id", (req, res) => {
 
 
 //ホーム画面の天気API（都市名 → 緯度経度 → 現在の気温と天気）
-//緯度経度はNominatim(OpenStreetMap)、天気はMET Norway(ノルウェー気象局)から取得（どちらもAPIキー不要）
+//緯度経度はPhoton(予備にNominatim、どちらもOpenStreetMap)、天気はMET Norway(ノルウェー気象局)から取得（どちらもAPIキー不要）
 //※Open-MeteoはIPアドレスごとの上限があり、Renderの共有IPだと上限を超えてしまうので使わない
 //どちらのAPIも「アプリ名と連絡先」をUser-Agentで名乗ることが利用条件になっている
 const USER_AGENT = "wear-cast/1.0 https://github.com/Namatya-25/wear-cast";
@@ -170,30 +170,31 @@ function getWeatherName(symbolCode) {
     return weatherNames[name] || "不明";
 }
 
-//一度調べた都市の緯度経度を覚えておく（Nominatimに同じ問い合わせを何度も送らないため）
+//一度調べた都市の緯度経度を覚えておく（同じ問い合わせを何度も送らないため）
 const placeCache = new Map();
 
 //都市名 → {name, lat, lon}（見つからなければnull）
-//まずNominatimで探し、Nominatimがエラーを返したらPhoton(同じOpenStreetMapのデータ)で探す
-//※RenderのIPはNominatimに断られることがあるので、予備を用意している
+//まずPhotonで探し、Photonがエラーを返したらNominatim(同じOpenStreetMapのデータ)で探す
+//※日本の地名はPhotonのほうが正確（例：「那覇」がNominatimだと中国の町になる）
+//※RenderのIPはNominatimに断られることがあるので、Nominatimは予備にしている
 async function findPlace(city) {
     if (placeCache.has(city)) return placeCache.get(city);
 
     let place;
     try {
-        const geoUrl = "https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ja&q=" + encodeURIComponent(city);
-        const geoRes = await fetch(geoUrl, { headers: { "User-Agent": USER_AGENT } });
-        if (!geoRes.ok) throw new Error(`${geoRes.status} ${(await geoRes.text()).slice(0, 200)}`);
-        const places = await geoRes.json();
-        place = places[0] ? { name: places[0].display_name.split(",")[0], lat: places[0].lat, lon: places[0].lon } : null;
-    } catch (err) {
-        console.error("Nominatimのエラー（Photonで探しなおします）:", err.message);
         const photonUrl = "https://photon.komoot.io/api/?limit=1&q=" + encodeURIComponent(city);
         const photonRes = await fetch(photonUrl, { headers: { "User-Agent": USER_AGENT } });
-        if (!photonRes.ok) throw new Error(`Photonのエラー: ${photonRes.status}`);
+        if (!photonRes.ok) throw new Error(`${photonRes.status} ${(await photonRes.text()).slice(0, 200)}`);
         const feature = (await photonRes.json()).features[0];
         // Photonの座標は[経度, 緯度]の順
         place = feature ? { name: feature.properties.name, lat: feature.geometry.coordinates[1], lon: feature.geometry.coordinates[0] } : null;
+    } catch (err) {
+        console.error("Photonのエラー（Nominatimで探しなおします）:", err.message);
+        const geoUrl = "https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ja&q=" + encodeURIComponent(city);
+        const geoRes = await fetch(geoUrl, { headers: { "User-Agent": USER_AGENT } });
+        if (!geoRes.ok) throw new Error(`Nominatimのエラー: ${geoRes.status}`);
+        const places = await geoRes.json();
+        place = places[0] ? { name: places[0].display_name.split(",")[0], lat: places[0].lat, lon: places[0].lon } : null;
     }
 
     placeCache.set(city, place);
