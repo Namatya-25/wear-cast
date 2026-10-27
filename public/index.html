@@ -16,7 +16,8 @@
 
 <body class="bg-gray-100 min-h-screen">
     <div class="min-h-screen bg-gray-100 flex justify-center">
-        <div class="w-full max-w-2xl paper-bg shadow-sm border border-gray-200">
+        <!-- 背景は天気に合わせて画像を切り替える（setWeatherBackgroundで設定） -->
+        <div id="page" class="w-full max-w-2xl paper-bg bg-cover bg-center shadow-sm border border-gray-200">
             <header class="bg-sky-100 px-6 py-4 flex justify justify-between">
                 <a href="index.html" class="flex items-center gap-2 text-gray-800 text-xl font-medium">
                     <img src="images/wearcast-icon-a-sunrise-tee.png" alt="WearCastのアイコン" class="w-8 h-8">
@@ -72,12 +73,29 @@
                             document.getElementById("weather-city").textContent = data.city;
                             document.getElementById("weather-temperature").textContent = data.temperature + "°";
                             document.getElementById("weather-text").textContent = data.weather;
+                            setWeatherBackground(data.weather);
                             showRecommend(data.temperature);
                         })
                         .catch(err => {
                             console.error("天気取得エラー:", err);
                             document.getElementById("weather-error").textContent = err.message;
                         });
+                }
+
+                //天気の文字(server.jsのweatherNames)から背景画像を選ぶ（判定できなければ背景なし）
+                //「雷雨」は雨より先、「にわか雪」は雪として判定する
+                function setWeatherBackground(weather) {
+                    let image = null;
+                    if (weather.includes("雷")) image = "thunder.svg";
+                    else if (weather.includes("雪")) image = "snowy.svg";
+                    else if (weather.includes("雨")) image = "rainy.svg";
+                    else if (weather.includes("晴")) image = "sunny.svg";
+                    else if (weather.includes("曇") || weather.includes("霧")) image = "cloudy.svg";
+
+                    const page = document.getElementById("page");
+                    page.style.backgroundImage = image ? `url(images/weather/${image})` : "";
+                    // 天気の画像には紙の質感を重ねない
+                    page.style.backgroundBlendMode = image ? "normal" : "";
                 }
 
                 //気温に合わせたおすすめの服を表示(server.jsの/api/recommendに対応)

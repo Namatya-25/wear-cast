@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f2531"/>
+      <stop offset="0.6" stop-color="#363f50"/>
+      <stop offset="1" stop-color="#525d6e"/>
+    </linearGradient>
+    <radialGradient id="flash" cx="0.62" cy="0.3" r="0.5">
+      <stop offset="0" stop-color="#e8ecff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#e8ecff" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="rain" width="110" height="150" patternUnits="userSpaceOnUse" patternTransform="rotate(18)">
+      <line x1="20" y1="0" x2="20" y2="44" stroke="#c4d2e2" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+      <line x1="65" y1="55" x2="65" y2="95" stroke="#c4d2e2" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+      <line x1="95" y1="100" x2="95" y2="140" stroke="#c4d2e2" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <rect width="1920" height="1080" fill="url(#flash)"/>
+  <g fill="#181d27" opacity="0.95">
+    <ellipse cx="330" cy="140" rx="440" ry="130"/>
+    <ellipse cx="560" cy="90" rx="270" ry="120"/>
+    <ellipse cx="1500" cy="130" rx="480" ry="130"/>
+    <ellipse cx="1720" cy="80" rx="260" ry="120"/>
+  </g>
+  <g fill="#2c3443" opacity="0.9">
+    <ellipse cx="1150" cy="270" rx="500" ry="115"/>
+    <ellipse cx="1300" cy="215" rx="270" ry="115"/>
+    <ellipse cx="500" cy="300" rx="380" ry="95"/>
+  </g>
+  <path d="M1200 250 L1080 560 L1185 560 L1040 960 L1340 520 L1225 520 L1320 250 Z" fill="#fff6c2" opacity="0.95"/>
+  <path d="M1200 250 L1080 560 L1185 560 L1040 960 L1340 520 L1225 520 L1320 250 Z" fill="none" stroke="#ffe680" stroke-width="16" opacity="0.35"/>
+  <path d="M420 340 L366 502 L429 502 L348 700 L501 466 L434 466 L483 340 Z" fill="#fff6c2" opacity="0.6"/>
+  <path d="M1720 300 L1675 435 L1728 435 L1660 600 L1788 405 L1732 405 L1773 300 Z" fill="#fff6c2" opacity="0.55"/>
+  <rect width="1920" height="1080" fill="url(#rain)"/>
+  <path d="M0 950 Q480 905 960 935 T1920 915 V1080 H0 Z" fill="#2f3a38" opacity="0.8"/>
+</svg>

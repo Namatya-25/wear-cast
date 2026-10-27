@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3b4656"/>
+      <stop offset="0.6" stop-color="#5a6778"/>
+      <stop offset="1" stop-color="#7c8898"/>
+    </linearGradient>
+    <pattern id="rain" width="120" height="160" patternUnits="userSpaceOnUse" patternTransform="rotate(12)">
+      <line x1="20" y1="0" x2="20" y2="38" stroke="#cfdcea" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
+      <line x1="70" y1="60" x2="70" y2="92" stroke="#cfdcea" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+      <line x1="105" y1="110" x2="105" y2="146" stroke="#cfdcea" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+      <line x1="45" y1="120" x2="45" y2="146" stroke="#cfdcea" stroke-width="1.5" stroke-linecap="round" opacity="0.35"/>
+    </pattern>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <g fill="#2e3846" opacity="0.9">
+    <ellipse cx="350" cy="150" rx="420" ry="120"/>
+    <ellipse cx="560" cy="100" rx="260" ry="120"/>
+    <ellipse cx="1450" cy="140" rx="460" ry="120"/>
+    <ellipse cx="1680" cy="90" rx="260" ry="120"/>
+  </g>
+  <g fill="#465264" opacity="0.85">
+    <ellipse cx="960" cy="260" rx="480" ry="110"/>
+    <ellipse cx="1120" cy="210" rx="260" ry="110"/>
+  </g>
+  <rect width="1920" height="1080" fill="url(#rain)"/>
+  <path d="M0 940 Q480 900 960 930 T1920 910 V1080 H0 Z" fill="#3f4d4a" opacity="0.7"/>
+  <g fill="none" stroke="#a9bacb" stroke-width="2" opacity="0.4">
+    <ellipse cx="420" cy="1010" rx="40" ry="8"/>
+    <ellipse cx="1100" cy="1030" rx="50" ry="9"/>
+    <ellipse cx="1600" cy="1000" rx="36" ry="7"/>
+  </g>
+</svg>
