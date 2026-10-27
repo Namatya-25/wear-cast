@@ -146,17 +146,29 @@ app.delete("/api/clothes/:id", (req, res) => {
 
 
 //ホーム画面の天気API（都市名 → 緯度経度 → 現在の気温と天気）
-//緯度経度はNominatim(OpenStreetMap)、天気はOpen-Meteoから取得（どちらもAPIキー不要）
+//緯度経度はNominatim(OpenStreetMap)、天気はMET Norway(ノルウェー気象局)から取得（どちらもAPIキー不要）
+//※Open-MeteoはIPアドレスごとの上限があり、Renderの共有IPだと上限を超えてしまうので使わない
+//どちらのAPIも「アプリ名と連絡先」をUser-Agentで名乗ることが利用条件になっている
+const USER_AGENT = "wear-cast/1.0 https://github.com/Namatya-25/wear-cast";
+
+//MET Norwayの天気記号(symbol_code)を日本語にする（_day/_nightは外してから探す）
+//背景画像の判定(index.htmlのsetWeatherBackground)に使うので「晴」「曇」「雨」「雪」「雷」「霧」の字を入れる
 const weatherNames = {
-    0: "快晴", 1: "晴れ", 2: "晴れ時々曇り", 3: "曇り",
-    45: "霧", 48: "霧",
-    51: "霧雨", 53: "霧雨", 55: "霧雨", 56: "霧雨", 57: "霧雨",
-    61: "雨", 63: "雨", 65: "大雨", 66: "雨", 67: "大雨",
-    71: "雪", 73: "雪", 75: "大雪", 77: "雪",
-    80: "にわか雨", 81: "にわか雨", 82: "強いにわか雨",
-    85: "にわか雪", 86: "にわか雪",
-    95: "雷雨", 96: "雷雨", 99: "雷雨"
+    clearsky: "快晴", fair: "晴れ", partlycloudy: "晴れ時々曇り", cloudy: "曇り", fog: "霧",
+    lightrain: "小雨", rain: "雨", heavyrain: "大雨",
+    lightrainshowers: "にわか雨", rainshowers: "にわか雨", heavyrainshowers: "強いにわか雨",
+    lightsleet: "みぞれ（雨と雪）", sleet: "みぞれ（雨と雪）", heavysleet: "みぞれ（雨と雪）",
+    lightsleetshowers: "みぞれ（雨と雪）", sleetshowers: "みぞれ（雨と雪）", heavysleetshowers: "みぞれ（雨と雪）",
+    lightsnow: "雪", snow: "雪", heavysnow: "大雪",
+    lightsnowshowers: "にわか雪", snowshowers: "にわか雪", heavysnowshowers: "にわか雪"
 };
+
+function getWeatherName(symbolCode) {
+    const name = symbolCode.split("_")[0];
+    // 「〜andthunder」は全部雷雨にする
+    if (name.includes("thunder")) return "雷雨";
+    return weatherNames[name] || "不明";
+}
 
 app.get("/api/weather", async (req, res) => {
     const city = req.query.city;
@@ -168,26 +180,30 @@ app.get("/api/weather", async (req, res) => {
         // 都市名をurlに変換
         const geoUrl = "https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ja&q=" + encodeURIComponent(city);
         // 身分証明書の提示
-        const geoRes = await fetch(geoUrl, { headers: { "User-Agent": "wear-cast" } });
+        const geoRes = await fetch(geoUrl, { headers: { "User-Agent": USER_AGENT } });
         const places = await geoRes.json();
         if (places.length === 0) {
             return res.status(404).send("都市が見つかりません");
         }
         const place = places[0];
 
-        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${place.lat}&longitude=${place.lon}&current=temperature_2m,weather_code&timezone=auto`;
-        const weatherRes = await fetch(weatherUrl);
-        const weather = await weatherRes.json();
-        // エラーのときは{error: true, reason: "..."}が返ってくるので、理由をログに出す
-        if (!weather.current) {
-            console.error("Open-Meteoのエラー:", weatherRes.status, weather.reason);
+        // 緯度経度は小数点4桁までにする（MET Norwayの決まり）
+        const lat = Number(place.lat).toFixed(4);
+        const lon = Number(place.lon).toFixed(4);
+        const weatherUrl = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`;
+        const weatherRes = await fetch(weatherUrl, { headers: { "User-Agent": USER_AGENT } });
+        if (!weatherRes.ok) {
+            console.error("MET Norwayのエラー:", weatherRes.status, await weatherRes.text());
             return res.status(502).send("天気の取得に失敗しました");
         }
+        const weather = await weatherRes.json();
 
+        // timeseriesの先頭が今の時間の予報
+        const now = weather.properties.timeseries[0].data;
         res.json({
             city: place.display_name.split(",")[0],
-            temperature: Math.round(weather.current.temperature_2m),
-            weather: weatherNames[weather.current.weather_code] || "不明"
+            temperature: Math.round(now.instant.details.air_temperature),
+            weather: getWeatherName(now.next_1_hours.summary.symbol_code)
         });
     } catch (err) {
         console.error(err);
