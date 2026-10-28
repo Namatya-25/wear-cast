@@ -59,3 +59,31 @@ select option {
         animation: none;
     }
 }
+
+/* ローディング画面をふわっと出す */
+.loading-overlay {
+    animation: modal-fade-in 0.25s ease-out;
+}
+
+/* 「読み込み中...」の点を順番に増やす */
+.loading-text::after {
+    content: "";
+    display: inline-block;
+    width: 1.5em;
+    text-align: left;
+    animation: loading-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes loading-dots {
+    0% { content: ""; }
+    25% { content: "."; }
+    50% { content: ".."; }
+    75% { content: "..."; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .loading-overlay,
+    .loading-text::after {
+        animation: none;
+    }
+}

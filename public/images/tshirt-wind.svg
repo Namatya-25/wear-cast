@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" width="400" height="320" fill="none">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#B3E5FC"/>
+      <stop offset="1" stop-color="#E1F5FE"/>
+    </linearGradient>
+    <linearGradient id="streak" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 空 -->
+  <rect width="200" height="160" rx="16" fill="url(#sky)"/>
+  <circle cx="168" cy="22" r="9" fill="#FFF59D"/>
+
+  <!-- 雲（速さ違いで2つ） -->
+  <g fill="#FFFFFF" opacity="0.9">
+    <g>
+      <ellipse cx="0" cy="0" rx="14" ry="6"/><ellipse cx="8" cy="-4" rx="9" ry="6"/>
+      <animateTransform attributeName="transform" type="translate" values="-30 16; 230 16" dur="16s" repeatCount="indefinite"/>
+    </g>
+    <g opacity="0.7">
+      <ellipse cx="0" cy="0" rx="10" ry="4"/><ellipse cx="6" cy="-3" rx="6" ry="4"/>
+      <animateTransform attributeName="transform" type="translate" values="-20 50; 230 50" dur="22s" begin="-9s" repeatCount="indefinite"/>
+    </g>
+  </g>
+
+  <!-- 物干しロープ（突風でたわむ） -->
+  <path stroke="#90A4AE" stroke-width="1.5" d="M0 30 Q100 42 200 30">
+    <animate attributeName="d" dur="6s" repeatCount="indefinite"
+      keyTimes="0;0.35;0.5;0.65;1"
+      values="M0 30 Q100 42 200 30; M0 30 Q101 42 200 30; M0 30 Q106 40 200 30; M0 30 Q104 41 200 30; M0 30 Q100 42 200 30"/>
+  </path>
+
+  <!-- 白T：突風の大きな揺れ × 細かいはためき × 裾の波打ち（周期をずらして不規則に） -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" dur="6s" repeatCount="indefinite"
+      keyTimes="0;0.15;0.3;0.42;0.5;0.58;0.68;0.85;1"
+      values="-1 100 38; 2 100 38; 0.5 100 38; 6 100 38; 3.5 100 38; 7 100 38; 4 100 38; 1 100 38; -1 100 38"/>
+    <g transform="translate(100 38)">
+      <g>
+        <animateTransform attributeName="transform" type="skewX" dur="1.3s" repeatCount="indefinite"
+          values="0;-3;1.5;-1;0"/>
+        <g transform="translate(-100 -38)">
+          <path fill="#FFFFFF" stroke="#B0BEC5" stroke-width="1.5" stroke-linejoin="round"
+                d="M84 38 L68 44 L56 60 L67 68 L75 61 L75 112 Q100 116 125 112 L125 61 L133 68 L144 60 L132 44 L116 38 C114 44 108 48 100 48 C92 48 86 44 84 38 Z">
+            <animate attributeName="d" dur="2.1s" repeatCount="indefinite"
+              keyTimes="0;0.2;0.38;0.55;0.75;1"
+              values="
+              M84 38 L68 44 L56 60 L67 68 L75 61 L75 112 Q100 116 125 112 L125 61 L133 68 L144 60 L132 44 L116 38 C114 44 108 48 100 48 C92 48 86 44 84 38 Z;
+              M84 38 L69 44 L59 59 L70 66 L77 60 L80 110 Q103 105 130 113 L127 60 L136 66 L147 57 L133 44 L116 38 C114 44 108 48 100 48 C92 48 86 44 84 38 Z;
+              M84 38 L69 44 L58 59 L69 67 L76 61 L79 113 Q99 120 131 108 L127 61 L137 65 L148 58 L133 44 L116 38 C114 44 108 48 100 48 C92 48 86 44 84 38 Z;
+              M84 38 L68 44 L57 61 L68 68 L76 61 L77 111 Q104 108 127 114 L126 61 L134 67 L145 59 L132 44 L116 38 C114 44 108 48 100 48 C92 48 86 44 84 38 Z;
+              M84 38 L68 44 L57 60 L68 67 L76 61 L78 112 Q101 119 128 110 L126 61 L135 67 L146 59 L132 44 L116 38 C114 44 108 48 100 48 C92 48 86 44 84 38 Z;
+              M84 38 L68 44 L56 60 L67 68 L75 61 L75 112 Q100 116 125 112 L125 61 L133 68 L144 60 L132 44 L116 38 C114 44 108 48 100 48 C92 48 86 44 84 38 Z"/>
+          </path>
+          <!-- しわ -->
+          <path stroke="#E3E8EB" stroke-width="2" stroke-linecap="round" d="M92 60 Q96 85 90 105">
+            <animate attributeName="d" dur="2.1s" repeatCount="indefinite"
+              values="M92 60 Q96 85 90 105; M94 60 Q102 84 99 104; M93 60 Q98 86 95 106; M92 60 Q96 85 90 105"/>
+          </path>
+          <path stroke="#E3E8EB" stroke-width="1.5" stroke-linecap="round" d="M110 62 Q113 80 111 98">
+            <animate attributeName="d" dur="1.7s" repeatCount="indefinite"
+              values="M110 62 Q113 80 111 98; M112 62 Q118 80 117 99; M110 62 Q113 80 111 98"/>
+          </path>
+        </g>
+      </g>
+    </g>
+  </g>
+
+  <!-- 洗濯ばさみ -->
+  <rect x="81.5" y="31" width="5" height="11" rx="1.5" fill="#4FC3F7"/>
+  <rect x="113.5" y="31" width="5" height="11" rx="1.5" fill="#4FC3F7"/>
+
+  <!-- 風の筋（突風のタイミングで濃くなる） -->
+  <g stroke="url(#streak)" stroke-linecap="round">
+    <animate attributeName="opacity" dur="6s" repeatCount="indefinite"
+      keyTimes="0;0.33;0.45;0.68;0.8;1" values="0.35;0.35;1;1;0.35;0.35"/>
+    <path stroke-width="1.6" stroke-dasharray="34 320"
+          d="M-20 78 C30 70 70 88 110 76 C135 68 152 58 147 50 C142 44 132 50 138 58 C148 70 185 72 230 66">
+      <animate attributeName="stroke-dashoffset" values="40;-330" dur="2.6s" repeatCount="indefinite"/>
+    </path>
+    <path stroke-width="1.2" stroke-dasharray="26 260"
+          d="M-20 102 Q40 94 95 104 T230 98">
+      <animate attributeName="stroke-dashoffset" values="30;-270" dur="1.9s" begin="0.6s" repeatCount="indefinite"/>
+    </path>
+    <path stroke-width="2" stroke-dasharray="40 300"
+          d="M-20 132 C40 124 80 140 120 130 C150 122 165 114 160 108 C155 103 147 109 153 116 C162 126 195 128 230 122">
+      <animate attributeName="stroke-dashoffset" values="45;-320" dur="3.1s" begin="1.2s" repeatCount="indefinite"/>
+    </path>
+    <path stroke-width="1" stroke-dasharray="18 260"
+          d="M-20 58 Q60 52 120 60 T230 54">
+      <animate attributeName="stroke-dashoffset" values="20;-270" dur="1.6s" begin="2.1s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 舞う葉っぱ -->
+  <path d="M0 -3 Q4 0 0 3 Q-4 0 0 -3 Z" fill="#81C784">
+    <animateMotion dur="4.2s" repeatCount="indefinite" rotate="auto"
+      path="M-10 120 C40 100 60 135 100 115 C130 100 140 70 125 75 C112 80 130 105 160 95 C180 88 200 80 215 70"/>
+    <animateTransform attributeName="transform" type="scale" values="1 1;1 0.3;1 1" dur="0.5s" repeatCount="indefinite" additive="sum"/>
+  </path>
+  <path d="M0 -2.5 Q3.5 0 0 2.5 Q-3.5 0 0 -2.5 Z" fill="#FFB74D">
+    <animateMotion dur="5.6s" begin="2.3s" repeatCount="indefinite" rotate="auto"
+      path="M-10 60 C30 70 50 45 90 58 C120 68 150 50 175 62 C190 70 205 60 215 55"/>
+    <animateTransform attributeName="transform" type="scale" values="1 1;1 0.4;1 1" dur="0.7s" repeatCount="indefinite" additive="sum"/>
+  </path>
+
+  <!-- 舞うほこり粒 -->
+  <g fill="#FFFFFF">
+    <circle r="1.2"><animateMotion dur="3.4s" repeatCount="indefinite" path="M-5 90 Q60 80 110 92 T210 85"/></circle>
+    <circle r="0.9"><animateMotion dur="2.8s" begin="1s" repeatCount="indefinite" path="M-5 140 Q70 130 130 142 T210 136"/></circle>
+    <circle r="1"><animateMotion dur="3.9s" begin="2s" repeatCount="indefinite" path="M-5 45 Q60 40 120 48 T210 42"/></circle>
+  </g>
+</svg>

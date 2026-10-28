@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
+    <script src="loading.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
@@ -61,9 +62,11 @@
             </main>
             <script>
                 //都市名からサーバー経由で天気を取得して表示(server.jsの/api/weatherに対応)
-                function showWeather(city) {
+                function showWeather(city, withLoading = false) {
                     document.getElementById("weather-error").textContent = "";
 
+                    // 検索したときだけローディング画面を出す
+                    if (withLoading) showLoading("天気を調べています");
                     fetch(`/api/weather?city=${encodeURIComponent(city)}`)
                         .then(res => {
                             if (!res.ok) return res.text().then(msg => { throw new Error(msg); });
@@ -79,7 +82,8 @@
                         .catch(err => {
                             console.error("天気取得エラー:", err);
                             document.getElementById("weather-error").textContent = err.message;
-                        });
+                        })
+                        .finally(hideLoading);
                 }
 
                 //天気の文字(server.jsのweatherNames)から背景画像を選ぶ（判定できなければ背景なし）
@@ -170,7 +174,7 @@
                 document.getElementById("search-form").addEventListener("submit", (e) => {
                     e.preventDefault();
                     const city = document.getElementById("city-input").value.trim();
-                    if (city) showWeather(city);
+                    if (city) showWeather(city, true);
                 });
 
                 //最初は東京を表示
