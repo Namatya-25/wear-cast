@@ -110,6 +110,24 @@ app.put("/api/clothes/:id", upload.single("image"), async (req, res) => {
 });
 
 
+//お気に入りの切り替えAPI（一覧・詳細の星ボタンから {favorite: true/false} が送られてくる）
+app.patch("/api/clothes/:id/favorite", (req, res) => {
+    const favorite = req.body && req.body.favorite ? 1 : 0;
+
+    const sql = "UPDATE clothes SET is_favorite = ? WHERE id = ?";
+    db.query(sql, [favorite, req.params.id], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("お気に入りの更新に失敗しました");
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).send("見つかりません");
+        }
+        res.json({ favorite: !!favorite });
+    });
+});
+
+
 //詳細画面からの削除API（画像ファイルも一緒に消す）
 app.delete("/api/clothes/:id", (req, res) => {
     // 先に画像のパスを取得しておく

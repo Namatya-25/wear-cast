@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="favorite.js"></script>
     <script src="https://kit.fontawesome.com/d4772c3c4b.js" crossorigin="anonymous"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -49,7 +50,7 @@
             const start = (currentPage - 1) * perPage;
             clothes.slice(start, start + perPage).forEach(item => {
                 const li = document.createElement("li");
-                li.classList.add("card-style");
+                li.classList.add("card-style", "relative");
 
                 let imgTag = "";
                 if (item.image_path) {
@@ -59,7 +60,8 @@
                 li.innerHTML = `
                         <a href="detail.html?id=${item.id}" class="block p-2 border rounded         hover:bg-sky-200 transition ease-in">
                         ${imgTag}<p class="mt-2" style="text-align: center;">${item.name}</p>
-                    </a>`;
+                    </a>
+                    ${item.is_favorite ? favoriteMarkHtml("absolute top-3 right-3") : ""}`;
 
                 list.appendChild(li);
             });

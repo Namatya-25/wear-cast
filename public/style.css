@@ -87,3 +87,8 @@ select option {
         animation: none;
     }
 }
+
+/* お気に入りの星（白いふち取りはfavorite.jsのSVGで描く）：写真の上でも見えるように薄い影をつける */
+.favorite-star {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+}

@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="favorite.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
@@ -24,9 +25,10 @@
 
                 <!-- データ表示エリア -->
                 <div id="detail-container" class="flex flex-col items-center gap-7 md:flex-row md:items-start">
-                    <div class="w-60 h-60 shrink-0">
+                    <div id="detail-image-box" class="relative w-60 h-60 shrink-0">
                         <img id="detail-image" class="w-full h-full object-cover border-2 border-gray-300 rounded"
                             src="" alt="画像">
+                        <!-- お気に入りの星ボタンはデータ取得後にここへ入れる -->
                     </div>
                     <div class="w-full md:w-auto">
                         <!-- 名前・カテゴリー・温度を表のように線で区切って表示 -->
@@ -71,6 +73,9 @@
                         document.getElementById('detail-name').textContent = item.name;
                         document.getElementById('detail-category').textContent = item.category;
                         document.getElementById('detail-temperature').textContent = item.temperature;
+                        // 画像の右上にお気に入りの星ボタンを置く（favorite.js）
+                        document.getElementById("detail-image-box")
+                            .insertAdjacentHTML("beforeend", favoriteButtonHtml(item.id, item.is_favorite, "absolute top-2 right-2"));
                     })
 
                     .catch(err => console.error("データ取得エラー:", err));

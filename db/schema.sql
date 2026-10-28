@@ -10,5 +10,9 @@ CREATE TABLE IF NOT EXISTS wear_cast_db.clothes (
   created_at timestamp NOT NULL DEFAULT current_timestamp(),
   image_path varchar(255) DEFAULT NULL,
   temperature varchar(50) DEFAULT NULL,
+  is_favorite tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (id)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- すでにテーブルがある場合は、お気に入りの列だけこれで追加する
+-- ALTER TABLE wear_cast_db.clothes ADD COLUMN is_favorite tinyint(1) NOT NULL DEFAULT 0;
