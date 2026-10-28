@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="modal.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
@@ -128,8 +129,7 @@
                 if (!res.ok) {
                     throw new Error("更新に失敗しました");
                 }
-                alert("更新しました！");
-                window.location.href = `detail.html?id=${id}`;
+                showDoneModal("洋服を更新しました！", `detail.html?id=${id}`);
             }).catch((error) => {
                 console.error("エラー:", error);
                 alert("更新に失敗しました");
