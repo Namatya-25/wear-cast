@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="modal.js"></script>
+    <script src="resize.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
@@ -110,7 +111,7 @@
             })
             .catch(err => console.error("データ取得エラー:", err));
 
-        function update() {
+        async function update() {
             const formData = new FormData();
             formData.append("name", document.getElementById("name").value);
             formData.append("category", document.getElementById("category").value);
@@ -118,8 +119,9 @@
 
             // 画像は新しく選んだときだけ送る（選ばなければ今の画像のまま）
             const imageFile = document.getElementById("image").files[0];
+            // 写真は小さくしてから送る（resize.js）
             if (imageFile) {
-                formData.append("image", imageFile);
+                formData.append("image", await resizeImage(imageFile));
             }
 
             fetch(`/api/clothes/${id}`, {
