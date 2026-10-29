@@ -82,8 +82,10 @@
                 const button = document.createElement("button");
                 button.textContent = label;
                 button.disabled = disabled;
-                button.className = "min-w-9 px-3 py-1 rounded border "
-                    + (active ? "bg-cyan-100 border-cyan-300 font-medium" : "bg-white border-gray-300 hover:bg-gray-100")
+                // 矢印（‹ ›）だけ文字を大きくする（ページ番号は数字で渡される）
+                button.className = "w-9 h-9 flex items-center justify-center rounded-full border "
+                    + (typeof label === "string" ? "text-2xl leading-none pb-1 " : "")
+                    + (active ? "bg-sky-100 border-sky-300 font-medium" : "bg-white border-gray-300 hover:bg-gray-100")
                     + (disabled ? " opacity-40 cursor-not-allowed" : "");
                 button.addEventListener("click", () => {
                     currentPage = page;
@@ -94,7 +96,10 @@
             };
 
             createButton("‹", currentPage - 1, currentPage === 1, false);
-            for (let page = 1; page <= totalPages; page++) {
+            // ページ番号は3つまで出す（今のページが真ん中に来るようにずらす）
+            const firstPage = Math.max(1, Math.min(currentPage - 1, totalPages - 2));
+            const lastPage = Math.min(totalPages, firstPage + 2);
+            for (let page = firstPage; page <= lastPage; page++) {
                 createButton(page, page, false, page === currentPage);
             }
             createButton("›", currentPage + 1, currentPage === totalPages, false);

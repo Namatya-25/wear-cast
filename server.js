@@ -48,7 +48,8 @@ app.post("/add-clothes", upload.single("image"), async (req, res) => {
 
 // 服の一覧を取る機能
 app.get("/get-clothes", (req, res) => {
-    const sql = "SELECT * FROM clothes";
+    // 新しく登録した服が一覧の左上に来るように、新しい順（idの大きい順）に並べる
+    const sql = "SELECT * FROM clothes ORDER BY id DESC";
 
     db.query(sql, (err, results) => {
         if (err) {
