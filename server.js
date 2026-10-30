@@ -279,7 +279,8 @@ app.get("/api/recommend", async (req, res) => {
     if (temperature <= 20) categories.outer = "アウター";
 
     try {
-        const sql = "SELECT id, name, category, image_path FROM clothes WHERE temperature = ? AND category = ? ORDER BY RAND() LIMIT 1";
+        // 温度はカンマ区切りで複数入っているので、FIND_IN_SETでその中に含まれているかを調べる
+        const sql = "SELECT id, name, category, image_path FROM clothes WHERE FIND_IN_SET(?, temperature) AND category = ? ORDER BY RAND() LIMIT 1";
         const result = { label };
 
         // 服が登録されていないカテゴリーはnullにする
