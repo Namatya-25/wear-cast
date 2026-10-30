@@ -15,6 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="favorite.js"></script>
+    <script src="color-picker.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
@@ -43,6 +44,10 @@
                             <tr class="border-b-2 border-[#87ceeb]">
                                 <th class="text-right text-base font-medium text-gray-600 py-4 pl-3 pr-6 whitespace-nowrap">カテゴリー<span class="ml-1">:</span></th>
                                 <td id="detail-category" class="text-2xl font-bold py-4"></td>
+                            </tr>
+                            <tr class="border-b-2 border-[#87ceeb]">
+                                <th class="text-right text-base font-medium text-gray-600 py-4 pl-3 pr-6 whitespace-nowrap">色<span class="ml-1">:</span></th>
+                                <td id="detail-color" class="text-2xl font-bold py-4"></td>
                             </tr>
                             <tr>
                                 <th class="text-right text-base font-medium text-gray-600 py-4 pl-3 pr-6 whitespace-nowrap">温度<span class="ml-1">:</span></th>
@@ -75,6 +80,8 @@
                         document.getElementById("detail-image").src = item.image_path;
                         document.getElementById('detail-name').textContent = item.name;
                         document.getElementById('detail-category').textContent = item.category;
+                        // 色の丸と名前を出す（登録されていない服は「未設定」・color-picker.js）
+                        document.getElementById('detail-color').innerHTML = colorLabelHtml(item.color);
                         // 温度はカンマ区切りで複数入っているので、登録画面と同じアイコンを付けて1つずつ改行して表示する
                         const temperatureIcons = {
                             "暑い日用（25°C以上）": "☀️",

@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="modal.js"></script>
     <script src="resize.js"></script>
+    <script src="color-picker.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
@@ -63,6 +64,12 @@
                                     </select>
                                 </div>
 
+                                <!-- 色の選択（14色の丸から1つ選ぶ・丸はcolor-picker.jsで並べる） -->
+                                <div class="w-full mb-2">
+                                    <p class="inline-block text-base font-medium text-gray-800 mt-1 mb-2 font-['Zen_Maru_Gothic',sans-serif]">色選択</p>
+                                    <div id="color-picker"></div>
+                                </div>
+
                                 <div class="w-full">
                                     <!-- 温度は複数選べるようにチェックボックスにする（保存するときはカンマ区切り） -->
                                     <p class="inline-block text-base font-medium text-gray-800 mt-3 mb-2 font-['Zen_Maru_Gothic',sans-serif]">温度選択（複数可）</p>
@@ -104,6 +111,9 @@
     </div>
 
     <script>
+        // 色の丸を並べる（color-picker.js）
+        renderColorPicker("color-picker");
+
         async function save() {
             // 画像ファイルを取得
             const imageFile = document.getElementById("image").files[0];
@@ -114,7 +124,7 @@
                 return; // ここで処理を止める
             }
 
-            // 必須項目（名前・服の種類・温度）が入力されているかチェック
+            // 必須項目（名前・服の種類・色・温度）が入力されているかチェック
             const name = document.getElementById("name").value.trim();
             const category = document.getElementById("category").value;
             // チェックされた温度をカンマ区切りの1つの文字列にする（何も選ばなければ空文字）
@@ -123,6 +133,11 @@
                 .join(",");
             if (!category) {
                 alert("カテゴリーを選択してください！");
+                return;
+            }
+            const color = document.getElementById("color").value;
+            if (!color) {
+                alert("色を選択してください！");
                 return;
             }
             if (!temperature) {
@@ -138,6 +153,7 @@
             const formData = new FormData();
             formData.append("name", name);
             formData.append("category", category);
+            formData.append("color", color);
             // 写真は小さくしてから送る（resize.js）
             formData.append("image", await resizeImage(imageFile));
             formData.append("temperature", temperature);

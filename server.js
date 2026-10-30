@@ -19,11 +19,11 @@ app.listen(port, () => {
 
 //画像アップロード機能付きの登録API
 app.post("/add-clothes", upload.single("image"), async (req, res) => {
-    const {name, category, temperature} = req.body;
+    const {name, category, color, temperature} = req.body;
 
-    // 必須項目のチェック（名前・服の種類・温度）
-    if (!name || !name.trim() || !category || !temperature) {
-        return res.status(400).send("名前・カテゴリー・温度は必須です");
+    // 必須項目のチェック（名前・服の種類・色・温度）
+    if (!name || !name.trim() || !category || !color || !temperature) {
+        return res.status(400).send("名前・カテゴリー・色・温度は必須です");
     }
 
     let imagePath;
@@ -34,9 +34,9 @@ app.post("/add-clothes", upload.single("image"), async (req, res) => {
         return res.status(500).send("画像の保存に失敗しました");
     }
 
-    const sql = "INSERT INTO clothes (name, category, temperature, image_path) VALUES (?, ?, ?, ?)";
+    const sql = "INSERT INTO clothes (name, category, color, temperature, image_path) VALUES (?, ?, ?, ?, ?)";
 
-    db.query(sql, [name, category, temperature, imagePath], (err, result) => {
+    db.query(sql, [name, category, color, temperature, imagePath], (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("保存に失敗しました");
@@ -81,10 +81,10 @@ app.get("/api/clothes/:id", (req, res) => {
 
 //編集画面からの更新API（画像は新しく選ばれたときだけ差し替える）
 app.put("/api/clothes/:id", upload.single("image"), async (req, res) => {
-    const {name, category, temperature} = req.body;
+    const {name, category, color, temperature} = req.body;
 
-    let sql = "UPDATE clothes SET name = ?, category = ?, temperature = ? WHERE id = ?";
-    let values = [name, category, temperature, req.params.id];
+    let sql = "UPDATE clothes SET name = ?, category = ?, color = ?, temperature = ? WHERE id = ?";
+    let values = [name, category, color, temperature, req.params.id];
 
     if (req.file) {
         let imagePath;
@@ -94,8 +94,8 @@ app.put("/api/clothes/:id", upload.single("image"), async (req, res) => {
             console.error(err);
             return res.status(500).send("画像の保存に失敗しました");
         }
-        sql = "UPDATE clothes SET name = ?, category = ?, temperature = ?, image_path = ? WHERE id = ?";
-        values = [name, category, temperature, imagePath, req.params.id];
+        sql = "UPDATE clothes SET name = ?, category = ?, color = ?, temperature = ?, image_path = ? WHERE id = ?";
+        values = [name, category, color, temperature, imagePath, req.params.id];
     }
 
     db.query(sql, values, (err, result) => {
