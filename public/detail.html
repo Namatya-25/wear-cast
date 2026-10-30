@@ -72,8 +72,28 @@
                         document.getElementById("detail-image").src = item.image_path;
                         document.getElementById('detail-name').textContent = item.name;
                         document.getElementById('detail-category').textContent = item.category;
-                        // 温度はカンマ区切りで複数入っているので、1つずつ改行して表示する
-                        document.getElementById('detail-temperature').innerText = (item.temperature || "").split(",").join("\n");
+                        // 温度はカンマ区切りで複数入っているので、登録画面と同じアイコンを付けて1つずつ改行して表示する
+                        const temperatureIcons = {
+                            "暑い日用（25°C以上）": "☀️",
+                            "暖かい日用（21°C~24°C）": "🍃",
+                            "肌寒い日用（16°C~20°C）": "🍁",
+                            "寒い日用（15°C以下）": "❄️"
+                        };
+                        // 「（15°C以下）」のようなかっこの部分は文字を少し小さくする
+                        const temperatureBox = document.getElementById('detail-temperature');
+                        (item.temperature || "").split(",").filter((t) => t).forEach((t) => {
+                            const line = document.createElement("div");
+                            const index = t.indexOf("（");
+                            const main = index === -1 ? t : t.slice(0, index);
+                            line.textContent = temperatureIcons[t] ? `${temperatureIcons[t]} ${main}` : main;
+                            if (index !== -1) {
+                                const small = document.createElement("span");
+                                small.className = "text-base";
+                                small.textContent = t.slice(index);
+                                line.appendChild(small);
+                            }
+                            temperatureBox.appendChild(line);
+                        });
                         // 画像の右上にお気に入りの星ボタンを置く（favorite.js）
                         document.getElementById("detail-image-box")
                             .insertAdjacentHTML("beforeend", favoriteButtonHtml(item.id, item.is_favorite, "absolute top-2 right-2"));
