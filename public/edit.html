@@ -176,7 +176,8 @@
                 if (!res.ok) {
                     throw new Error("更新に失敗しました");
                 }
-                showDoneModal("洋服を更新しました！", `detail.html?id=${id}`);
+                // 更新したら絞り込みを解除した全件の一覧に戻す
+                showDoneModal("洋服を更新しました！", "list.html");
             }).catch((error) => {
                 console.error("エラー:", error);
                 alert("更新に失敗しました");

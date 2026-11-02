@@ -123,6 +123,8 @@
                     fetch(`/api/clothes/${id}`, { method: "DELETE" })
                         .then(res => {
                             if (!res.ok) throw new Error("削除に失敗しました");
+                            // 削除したら絞り込みを解除した全件の一覧に戻す
+                            sessionStorage.removeItem("listState");
                             window.location.href = "list.html";
                         })
                         .catch(err => {

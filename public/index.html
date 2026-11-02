@@ -69,6 +69,9 @@
                 </div>
             </main>
             <script>
+                //ホームに戻ったら洋服一覧の絞り込みは解除する（ブラウザの戻るで来たときも動くようにpageshowを使う）
+                window.addEventListener("pageshow", () => sessionStorage.removeItem("listState"));
+
                 //都市名からサーバー経由で天気を取得して表示(server.jsの/api/weatherに対応)
                 function showWeather(city, withLoading = false) {
                     document.getElementById("weather-error").textContent = "";

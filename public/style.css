@@ -88,6 +88,58 @@ select option {
     }
 }
 
+/* 一覧画面の絞り込み：下から出てくる画面（上下の余白は--filter-space。高さが低い画面では詰めてスクロールしないようにする） */
+.filter-sheet {
+    --filter-space: 0.75rem;
+}
+
+@media (max-height: 620px) {
+    .filter-sheet {
+        --filter-space: 0.375rem;
+    }
+}
+
+.filter-sheet[open] {
+    animation: filter-sheet-up 0.25s ease-out;
+}
+
+/* 閉じるときは下に下げて、暗い背景も一緒に消す（アニメーションの後の閉じる処理はlist.html） */
+.filter-sheet.closing {
+    animation: filter-sheet-down 0.25s ease-in forwards;
+}
+
+.filter-sheet.closing::backdrop {
+    animation: filter-backdrop-out 0.25s ease-in forwards;
+}
+
+@keyframes filter-sheet-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+@keyframes filter-sheet-down {
+    from { transform: translateY(0); }
+    to { transform: translateY(100%); }
+}
+
+@keyframes filter-backdrop-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .filter-sheet[open],
+    .filter-sheet.closing,
+    .filter-sheet.closing::backdrop {
+        animation: none;
+    }
+}
+
+/* 一覧画面の絞り込み：選んでいない色の丸には✓を出さない */
+.color-filter-input:not(:checked) + span > * {
+    visibility: hidden;
+}
+
 /* お気に入りの星（白いふち取りはfavorite.jsのSVGで描く）：写真の上でも見えるように薄い影をつける */
 .favorite-star {
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));

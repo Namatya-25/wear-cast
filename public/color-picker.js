@@ -1,6 +1,7 @@
 // 洋服の色
 // 登録・編集画面：14色の丸を並べて、タップした色に✓を付ける（1つだけ選べる・もう一度押すと外れる）
 // 詳細画面：選んだ色の丸と名前を出す
+// 一覧画面の絞り込み：14色の丸を並べて、複数選べるようにする
 
 // 色の名前と丸の色（lightは明るい色：✓を黒にして、白い背景でも見えるように枠線を付ける）
 const CLOTHES_COLORS = [
@@ -57,6 +58,22 @@ function selectColor(name) {
         btn.querySelector("i").classList.toggle("hidden", !selected);
     });
     document.getElementById("color-selected").textContent = `選択中：${next || "なし"}`;
+}
+
+// 一覧画面の絞り込み用：色の丸を並べる（name="color"のチェックボックスなので、フォームから選んだ色を読める。✓の表示はstyle.cssのcolor-filter-input）
+function renderColorFilter(boxId) {
+    const box = document.getElementById(boxId);
+    box.innerHTML = `
+        <div class="grid grid-cols-7 gap-1.5 justify-items-center">
+            ${CLOTHES_COLORS.map((c) => `
+                <label title="${c.name}" class="cursor-pointer">
+                    <input type="checkbox" name="color" value="${c.name}" aria-label="${c.name}" class="color-filter-input peer sr-only">
+                    <span class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center transition hover:scale-110 peer-focus-visible:ring-2 peer-focus-visible:ring-sky-400"
+                        style="background-color: ${c.hex}">
+                        <i class="fa-solid fa-check text-base ${c.light ? "text-gray-800" : "text-white"}"></i>
+                    </span>
+                </label>`).join("")}
+        </div>`;
 }
 
 // 詳細画面用：色の丸と名前（登録されていない服は「未設定」）
