@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WearCast</title>
+    <!-- ブラウザのタブとiPhoneのホーム画面に出すアイコン -->
+    <link rel="icon" type="image/png" href="images/wearcast-logo.png">
+    <link rel="apple-touch-icon" href="images/wearcast-logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<!-- ログインしていないときに最初に出す画面（ログイン済みならserver.jsがホームに移動させる） -->
+<body class="bg-[#A9D8F5]">
+    <!-- 背景の風景（縦長の画面はwelcome-scene.webp、横長の画面はwelcome-scene-pc.webp。style.cssの.welcome-scene） -->
+    <div class="welcome-scene fixed inset-0 bg-cover" aria-hidden="true"></div>
+
+    <!-- 上の空にロゴと説明文、下の芝生にボタンを置く（物干しは下のほうに来るので、ボタンはその下の芝生に置く） -->
+    <main class="relative min-h-dvh flex flex-col items-center px-6 text-center text-gray-900">
+        <div class="welcome-heading">
+            <!-- ロゴと文字は真ん中から少しだけ左に寄せる -->
+            <h1 class="flex items-center justify-center gap-4 -translate-x-2 text-4xl md:text-5xl font-medium">
+                <img src="images/wearcast-logo.png" alt="" class="w-12 h-12 md:w-14 md:h-14">
+                WearCast
+            </h1>
+            <p class="mt-6 text-sm md:text-base leading-relaxed font-medium font-['Zen_Maru_Gothic',sans-serif]">
+                今日の天気と気温に合わせて、あなたの<br>手持ちの服からぴったりのコーデを提案します。
+            </p>
+        </div>
+
+        <div class="flex-1"></div>
+
+        <div class="w-full max-w-[12rem] flex flex-col gap-4 pb-[9dvh]">
+            <a href="login.html" class="block py-2 rounded-full bg-[#3B6FE0] text-white font-medium shadow-md hover:opacity-80 transition">ログイン</a>
+            <a href="signup.html" class="block py-2 rounded-full bg-gray-300 text-gray-800 font-medium shadow-md hover:opacity-80 transition">新規登録</a>
+        </div>
+    </main>
+</body>
+
+</html>

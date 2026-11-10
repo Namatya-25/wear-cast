@@ -15,8 +15,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
+    <script src="auth-check.js"></script>
     <script src="loading.js"></script>
     <script src="weather-icons.js"></script>
+    <script src="toast.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
@@ -28,9 +30,13 @@
                     <img src="images/wearcast-logo.png" alt="WearCastのアイコン" class="w-8 h-8">
                     WearCast
                 </a>
-                <nav class="font-medium font-['Zen_Maru_Gothic',sans-serif]">
+                <nav class="flex items-center font-medium font-['Zen_Maru_Gothic',sans-serif]">
                     <a href="list.html" class="mr-3">洋服一覧</a>
                     <a href="register.html">洋服登録</a>
+                    <!-- ログアウト（押すと確認のダイアログを出す） -->
+                    <button type="button" id="logout-open" aria-label="ログアウト" title="ログアウト" class="ml-3 text-gray-700 hover:opacity-60 transition">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
                 </nav>
             </header>
             <main class="px-6 py-6 md:px-8 md:py-10">
@@ -68,7 +74,27 @@
                     </div>
                 </div>
             </main>
+
+            <!-- ログアウトの確認ダイアログ（「ログアウト」でserver.jsのauth.jsの/logoutに送る） -->
+            <dialog id="logout-dialog" class="done-modal-box w-[calc(100%-2rem)] max-w-sm bg-white border-[5px] border-[#5ad8e0] rounded-3xl shadow-xl px-6 pt-10 pb-8 text-center backdrop:bg-black/30">
+                <p class="text-xl text-gray-900 mb-8 font-medium font-['Zen_Maru_Gothic',sans-serif]">ログアウトしますか？</p>
+                <form action="/logout" method="post" class="flex justify-center gap-4">
+                    <button type="button" id="logout-cancel" class="w-28 py-2 rounded-full bg-gray-200 text-gray-800 font-medium hover:opacity-80 transition outline-none focus-visible:ring-2 focus-visible:ring-sky-300">キャンセル</button>
+                    <button type="submit" class="w-28 py-2 rounded-full bg-[#4FC3F7] text-white font-medium hover:opacity-80 transition outline-none focus-visible:ring-2 focus-visible:ring-sky-300">ログアウト</button>
+                </form>
+            </dialog>
             <script>
+                //ログアウトの確認ダイアログ（キャンセルか、ダイアログの外側を押したら閉じる）
+                const logoutDialog = document.getElementById("logout-dialog");
+                document.getElementById("logout-open").addEventListener("click", () => logoutDialog.showModal());
+                document.getElementById("logout-cancel").addEventListener("click", () => logoutDialog.close());
+                logoutDialog.addEventListener("click", (e) => {
+                    // ダイアログの余白を押したときもe.targetがダイアログになるので、外側かどうかは位置で調べる
+                    const rect = logoutDialog.getBoundingClientRect();
+                    const outside = e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom;
+                    if (e.target === logoutDialog && outside) logoutDialog.close();
+                });
+
                 //ホームに戻ったら洋服一覧の絞り込みは解除する（ブラウザの戻るで来たときも動くようにpageshowを使う）
                 window.addEventListener("pageshow", () => sessionStorage.removeItem("listState"));
 

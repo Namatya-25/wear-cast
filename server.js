@@ -4,9 +4,20 @@ const db = require("./src/config/db.js");
 // Renderではポート番号が環境変数PORTで渡される
 const port = process.env.PORT || 3000;
 const { upload, saveImage, deleteImage } = require("./src/config/storage.js");
+const auth = require("./src/auth.js");
+
+// Renderは前にプロキシがあるので、httpsで来たことをExpressに伝える（secureなCookieを使うため）
+app.set("trust proxy", 1);
+app.use(express.json());
+auth.setup(app);
+
+// ログイン画面はログイン済みならホームへ、それ以外の画面はログインしていなければ最初の画面へ
+// （express.staticより前に置かないと、HTMLがそのまま返ってしまう）
+app.use(auth.guardPages);
 app.use(express.static('public'));
 
-app.use(express.json());
+// 洋服のデータを扱うAPIはログインしている人だけ使える
+app.use(["/add-clothes", "/get-clothes", "/api/clothes", "/api/recommend"], auth.requireLogin);
 
 app.get("/", (req, res) => {
     res.send("サーバーは正常に稼働中です")
@@ -34,9 +45,9 @@ app.post("/add-clothes", upload.single("image"), async (req, res) => {
         return res.status(500).send("画像の保存に失敗しました");
     }
 
-    const sql = "INSERT INTO clothes (name, category, color, temperature, image_path) VALUES (?, ?, ?, ?, ?)";
+    const sql = "INSERT INTO clothes (user_id, name, category, color, temperature, image_path) VALUES (?, ?, ?, ?, ?, ?)";
 
-    db.query(sql, [name, category, color, temperature, imagePath], (err, result) => {
+    db.query(sql, [req.session.userId, name, category, color, temperature, imagePath], (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("保存に失敗しました");
@@ -49,9 +60,10 @@ app.post("/add-clothes", upload.single("image"), async (req, res) => {
 // 服の一覧を取る機能
 app.get("/get-clothes", (req, res) => {
     // 新しく登録した服が一覧の左上に来るように、新しい順（idの大きい順）に並べる
-    const sql = "SELECT * FROM clothes ORDER BY id DESC";
+    // 自分の服だけを出す
+    const sql = "SELECT * FROM clothes WHERE user_id = ? ORDER BY id DESC";
 
-    db.query(sql, (err, results) => {
+    db.query(sql, [req.session.userId], (err, results) => {
         if (err) {
             console.error(err);
             return res.status(500).send("取得に失敗しました");
@@ -65,8 +77,8 @@ app.get("/get-clothes", (req, res) => {
 //詳細画面の取得用エンドポイント（最終的にjsonを返す）
 app.get("/api/clothes/:id", (req, res) => {
     // そのidの行のデータをすべて取得(nameとかcategoryとか)
-    const sql = "SELECT * FROM clothes WHERE id = ?";
-    db.query(sql, [req.params.id], (err, result) => {
+    const sql = "SELECT * FROM clothes WHERE id = ? AND user_id = ?";
+    db.query(sql, [req.params.id, req.session.userId], (err, result) => {
         if(err) {
             console.error(err);
             return res.status(500).send("エラーが発生しました");
@@ -83,8 +95,8 @@ app.get("/api/clothes/:id", (req, res) => {
 app.put("/api/clothes/:id", upload.single("image"), async (req, res) => {
     const {name, category, color, temperature} = req.body;
 
-    let sql = "UPDATE clothes SET name = ?, category = ?, color = ?, temperature = ? WHERE id = ?";
-    let values = [name, category, color, temperature, req.params.id];
+    let sql = "UPDATE clothes SET name = ?, category = ?, color = ?, temperature = ? WHERE id = ? AND user_id = ?";
+    let values = [name, category, color, temperature, req.params.id, req.session.userId];
 
     if (req.file) {
         let imagePath;
@@ -94,8 +106,8 @@ app.put("/api/clothes/:id", upload.single("image"), async (req, res) => {
             console.error(err);
             return res.status(500).send("画像の保存に失敗しました");
         }
-        sql = "UPDATE clothes SET name = ?, category = ?, color = ?, temperature = ?, image_path = ? WHERE id = ?";
-        values = [name, category, color, temperature, imagePath, req.params.id];
+        sql = "UPDATE clothes SET name = ?, category = ?, color = ?, temperature = ?, image_path = ? WHERE id = ? AND user_id = ?";
+        values = [name, category, color, temperature, imagePath, req.params.id, req.session.userId];
     }
 
     db.query(sql, values, (err, result) => {
@@ -115,8 +127,8 @@ app.put("/api/clothes/:id", upload.single("image"), async (req, res) => {
 app.patch("/api/clothes/:id/favorite", (req, res) => {
     const favorite = req.body && req.body.favorite ? 1 : 0;
 
-    const sql = "UPDATE clothes SET is_favorite = ? WHERE id = ?";
-    db.query(sql, [favorite, req.params.id], (err, result) => {
+    const sql = "UPDATE clothes SET is_favorite = ? WHERE id = ? AND user_id = ?";
+    db.query(sql, [favorite, req.params.id, req.session.userId], (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).send("お気に入りの更新に失敗しました");
@@ -132,9 +144,9 @@ app.patch("/api/clothes/:id/favorite", (req, res) => {
 //詳細画面からの削除API（画像ファイルも一緒に消す）
 app.delete("/api/clothes/:id", (req, res) => {
     // 先に画像のパスを取得しておく
-    const selectSql = "SELECT image_path FROM clothes WHERE id = ?";
+    const selectSql = "SELECT image_path FROM clothes WHERE id = ? AND user_id = ?";
 
-    db.query(selectSql, [req.params.id], (err, rows) => {
+    db.query(selectSql, [req.params.id, req.session.userId], (err, rows) => {
         if (err) {
             console.error(err);
             return res.status(500).send("削除に失敗しました");
@@ -144,8 +156,8 @@ app.delete("/api/clothes/:id", (req, res) => {
         }
         const imagePath = rows[0].image_path;
 
-        const deleteSql = "DELETE FROM clothes WHERE id = ?";
-        db.query(deleteSql, [req.params.id], (err) => {
+        const deleteSql = "DELETE FROM clothes WHERE id = ? AND user_id = ?";
+        db.query(deleteSql, [req.params.id, req.session.userId], (err) => {
             if (err) {
                 console.error(err);
                 return res.status(500).send("削除に失敗しました");
@@ -280,12 +292,12 @@ app.get("/api/recommend", async (req, res) => {
 
     try {
         // 温度はカンマ区切りで複数入っているので、FIND_IN_SETでその中に含まれているかを調べる
-        const sql = "SELECT id, name, category, image_path FROM clothes WHERE FIND_IN_SET(?, temperature) AND category = ? ORDER BY RAND() LIMIT 1";
+        const sql = "SELECT id, name, category, image_path FROM clothes WHERE user_id = ? AND FIND_IN_SET(?, temperature) AND category = ? ORDER BY RAND() LIMIT 1";
         const result = { label };
 
         // 服が登録されていないカテゴリーはnullにする
         for (const [key, category] of Object.entries(categories)) {
-            const [rows] = await db.promise().query(sql, [label, category]);
+            const [rows] = await db.promise().query(sql, [req.session.userId, label, category]);
             result[key] = rows[0] || null;
         }
         res.json(result);
