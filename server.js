@@ -4,6 +4,7 @@ const db = require("./src/config/db.js");
 // Renderではポート番号が環境変数PORTで渡される
 const port = process.env.PORT || 3000;
 const { uploadImage, saveImage, deleteImage } = require("./src/config/storage.js");
+const { validateClothes } = require("./src/validate-clothes.js");
 const auth = require("./src/auth.js");
 
 // Renderは前にプロキシがあるので、httpsで来たことをExpressに伝える（secureなCookieを使うため）
@@ -30,12 +31,13 @@ app.listen(port, () => {
 
 //画像アップロード機能付きの登録API
 app.post("/add-clothes", uploadImage, async (req, res) => {
-    const {name, category, color, temperature} = req.body;
-
-    // 必須項目のチェック（名前・服の種類・色・温度）
-    if (!name || !name.trim() || !category || !color || !temperature) {
-        return res.status(400).send("名前・カテゴリー・色・温度は必須です");
+    // 名前・カテゴリー・色・温度を確かめる（src/validate-clothes.js）
+    const { value, error } = validateClothes(req.body);
+    if (error) {
+        discardUpload(req.file);
+        return res.status(400).send(error);
     }
+    const { name, category, color, temperature } = value;
 
     let imagePath;
     try {
@@ -95,7 +97,13 @@ app.get("/api/clothes/:id", (req, res) => {
 // 写真を差し替えたときは、更新が成功したら前の写真を消す（Cloudinaryに使わない画像がたまらないように）
 // 更新に失敗したときは、今受け取った新しい写真のほうを消す
 app.put("/api/clothes/:id", uploadImage, async (req, res) => {
-    const {name, category, color, temperature} = req.body;
+    // 登録と同じチェック（src/validate-clothes.js）
+    const { value, error } = validateClothes(req.body);
+    if (error) {
+        discardUpload(req.file);
+        return res.status(400).send(error);
+    }
+    const { name, category, color, temperature } = value;
 
     // 先に今の写真の場所を読む（自分の服でなければここで404にする。まだCloudinaryには何も上げていない）
     let oldImagePath;
