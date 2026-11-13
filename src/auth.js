@@ -2,6 +2,7 @@ require("dotenv").config({ quiet: true });
 const crypto = require("crypto");
 const cookieSession = require("cookie-session");
 const db = require("./config/db.js");
+const { sendVerificationEmail } = require("./mail.js");
 
 // アプリのURL（GoogleのログインのあとにGoogleが戻ってくる先に使う）。本番では https://〜.onrender.com を入れる
 const BASE_URL = (process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`).replace(/\/$/, "");
@@ -14,7 +15,9 @@ if (!process.env.SESSION_SECRET) {
 }
 
 // ログインしていなくても見られる画面
-const PUBLIC_PAGES = ["/welcome.html", "/login.html", "/signup.html"];
+const PUBLIC_PAGES = ["/welcome.html", "/login.html", "/signup.html", "/verify-sent.html"];
+// ログインしていてもいなくても見られる画面（ログイン中でもホームに飛ばさない）
+const OPEN_PAGES = ["/privacy.html", "/terms.html"];
 
 // パスワードは8〜20字の半角英数字
 const PASSWORD_PATTERN = /^[A-Za-z0-9]{8,20}$/;
@@ -36,6 +39,8 @@ function setup(app) {
     app.post("/api/login", login);
     app.post("/logout", logout);
     app.get("/api/me", me);
+    app.get("/auth/verify", verifyEmail);
+    app.post("/api/resend-verification", resendVerification);
     app.get("/auth/google", googleStart);
     app.get("/auth/google/callback", googleCallback);
 }
@@ -43,7 +48,7 @@ function setup(app) {
 // 画面（HTML）を返す前のチェック
 function guardPages(req, res, next) {
     const isPage = req.path === "/" || req.path.endsWith(".html");
-    if (!isPage) return next();
+    if (!isPage || OPEN_PAGES.includes(req.path)) return next();
 
     const loggedIn = !!req.session.userId;
     if (PUBLIC_PAGES.includes(req.path)) {
@@ -104,16 +109,111 @@ async function signup(req, res) {
 
     try {
         const passwordHash = await hashPassword(password);
-        const [result] = await db.promise().query(
-            "INSERT INTO users (email, password_hash) VALUES (?, ?)", [email, passwordHash]);
-        req.session.userId = result.insertId;
-        res.send("登録しました");
+        const [rows] = await db.promise().query(
+            `SELECT id, email_verified,
+                verify_sent_at > DATE_SUB(NOW(), INTERVAL ${RESEND_WAIT_SECONDS} SECOND) AS too_soon
+             FROM users WHERE email = ?`, [email]);
+        const user = rows[0];
+
+        if (user && user.email_verified) {
+            return res.status(409).send("このメールアドレスはすでに登録されています");
+        }
+        if (user) {
+            // 何度も押されてメールが大量に送られないようにする
+            if (user.too_soon) {
+                return res.status(429).send("少し時間をおいてから、もう一度お試しください");
+            }
+            // 登録したけれど確認がまだの人は、パスワードを入れ直して確認メールを送り直す
+            // （確認するまではログインできないので、洋服のデータはまだ無い）
+            await db.promise().query("UPDATE users SET password_hash = ? WHERE id = ?", [passwordHash, user.id]);
+            await startVerification(user.id, email);
+        } else {
+            const [result] = await db.promise().query(
+                "INSERT INTO users (email, password_hash, email_verified) VALUES (?, ?, 0)", [email, passwordHash]);
+            await startVerification(result.insertId, email);
+        }
+        // ここではまだログインさせない（メールのリンクを開いたらログインする）
+        res.send("確認メールを送りました");
     } catch (err) {
         if (err.code === "ER_DUP_ENTRY") {
             return res.status(409).send("このメールアドレスはすでに登録されています");
         }
         console.error(err);
         res.status(500).send("登録に失敗しました");
+    }
+}
+
+
+// ---------- メールアドレスの確認 ----------
+// 流れ：新規登録 → ランダムな合言葉（トークン）入りのリンクをメールで送る
+//      → リンクを開くと /auth/verify?token=〜 に来る → 確認済みにしてログイン
+// トークンはそのままDBに入れず、SHA-256のハッシュにして保存する（DBが見られても使えないように）
+
+const VERIFY_HOURS = 24;       // リンクの有効期限
+const RESEND_WAIT_SECONDS = 60; // 再送は1分に1回まで
+
+function hashToken(token) {
+    return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+// 新しいトークンを作って保存し、確認メールを送る
+async function startVerification(userId, email) {
+    const token = crypto.randomBytes(32).toString("hex");
+    await db.promise().query(
+        `UPDATE users SET verify_token_hash = ?,
+            verify_expires_at = DATE_ADD(NOW(), INTERVAL ${VERIFY_HOURS} HOUR),
+            verify_sent_at = NOW()
+         WHERE id = ?`, [hashToken(token), userId]);
+    await sendVerificationEmail(email, `${BASE_URL}/auth/verify?token=${token}`);
+}
+
+async function verifyEmail(req, res) {
+    const token = typeof req.query.token === "string" ? req.query.token : "";
+    if (!/^[0-9a-f]{64}$/.test(token)) return res.redirect("/login.html?error=verify_invalid");
+
+    try {
+        const [rows] = await db.promise().query(
+            "SELECT id, verify_expires_at > NOW() AS valid FROM users WHERE verify_token_hash = ?", [hashToken(token)]);
+        const user = rows[0];
+        if (!user) return res.redirect("/login.html?error=verify_invalid");
+        if (!user.valid) return res.redirect("/login.html?error=verify_expired");
+
+        await db.promise().query(
+            `UPDATE users SET email_verified = 1, verify_token_hash = NULL, verify_expires_at = NULL
+             WHERE id = ?`, [user.id]);
+        req.session.userId = user.id;
+        res.redirect("/index.html?verified=1");
+    } catch (err) {
+        console.error(err);
+        res.redirect("/login.html?error=verify_invalid");
+    }
+}
+
+// 確認メールの再送
+// 登録されているかどうかを調べられないように、どんな場合も同じ返事をする
+async function resendVerification(req, res) {
+    const email = normalizeEmail(req.body.email);
+    const reply = "確認がまだのアカウントであれば、確認メールを送りました";
+    if (!EMAIL_PATTERN.test(email)) {
+        return res.status(400).send("メールアドレスを正しく入力してください");
+    }
+
+    try {
+        const [rows] = await db.promise().query(
+            `SELECT id, email_verified,
+                verify_sent_at > DATE_SUB(NOW(), INTERVAL ${RESEND_WAIT_SECONDS} SECOND) AS too_soon
+             FROM users WHERE email = ?`, [email]);
+        const user = rows[0];
+        if (user && !user.email_verified) {
+            if (user.too_soon) {
+                return res.status(429).send("少し時間をおいてから、もう一度お試しください");
+            }
+            await startVerification(user.id, email);
+        }
+        res.send(reply);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("送信に失敗しました。時間をおいてもう一度お試しください");
     }
 }
 
@@ -130,7 +230,8 @@ async function login(req, res) {
     }
 
     try {
-        const [rows] = await db.promise().query("SELECT id, password_hash FROM users WHERE email = ?", [email]);
+        const [rows] = await db.promise().query(
+            "SELECT id, password_hash, email_verified FROM users WHERE email = ?", [email]);
         const user = rows[0];
         if (!user) return res.status(401).send(failMessage);
         // Googleで登録した人・Googleをつなげた人はパスワードを持っていない
@@ -139,6 +240,10 @@ async function login(req, res) {
         }
         if (!(await verifyPassword(password, user.password_hash))) {
             return res.status(401).send(failMessage);
+        }
+        // パスワードは合っているが、メールアドレスの確認がまだ（画面に再送ボタンを出すので403で返す）
+        if (!user.email_verified) {
+            return res.status(403).send("メールアドレスの確認がまだです。届いたメールのリンクを開いてください");
         }
         req.session.userId = user.id;
         res.send("ログインしました");
@@ -243,22 +348,25 @@ async function googleCallback(req, res) {
             return res.redirect("/index.html?login=1");
         }
 
-        // 同じメールアドレスがパスワードで登録されているときは、そのアカウントにGoogleをつなげて、パスワードは消す
-        // （新規登録ではメールアドレスが本人のものか確かめていないので、他人が先に登録していたかもしれない。
-        //   Googleで確認できたこの人が本当の持ち主なので、パスワードを消して他人が入れないようにする）
+        // 同じメールアドレスがパスワードで登録されているときは、そのアカウントにGoogleをつなげる
+        // メールの確認がまだのときは、他人が先に登録していたかもしれないのでパスワードを消す
+        // （Googleで確認できたこの人が本当の持ち主なので、他人が入れないようにする）。確認済みならパスワードは残す
         const [sameEmail] = await db.promise().query("SELECT id, google_id FROM users WHERE email = ?", [email]);
         if (sameEmail[0]) {
             // 別のGoogleアカウントがすでにつながっているときはつなげない
             if (sameEmail[0].google_id) return fail("google_failed");
             await db.promise().query(
-                "UPDATE users SET google_id = ?, password_hash = NULL WHERE id = ?", [googleId, sameEmail[0].id]);
+                `UPDATE users SET google_id = ?,
+                    password_hash = IF(email_verified = 1, password_hash, NULL),
+                    email_verified = 1, verify_token_hash = NULL, verify_expires_at = NULL
+                 WHERE id = ?`, [googleId, sameEmail[0].id]);
             req.session.userId = sameEmail[0].id;
             return res.redirect("/index.html?login=1");
         }
 
         // 初めての人は新しく登録する
         const [result] = await db.promise().query(
-            "INSERT INTO users (email, google_id) VALUES (?, ?)", [email, googleId]);
+            "INSERT INTO users (email, google_id, email_verified) VALUES (?, ?, 1)", [email, googleId]);
         req.session.userId = result.insertId;
         res.redirect("/index.html?login=1");
     } catch (err) {

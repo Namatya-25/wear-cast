@@ -198,3 +198,10 @@ select option {
         padding-top: 7dvh;
     }
 }
+
+/* 利用規約・プライバシーポリシー（privacy.html / terms.html） */
+.legal h2 { font-size: 1rem; font-weight: 500; color: #1f2937; margin-bottom: 0.5rem; }
+.legal ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0; }
+.legal li + li { margin-top: 0.25rem; }
+.legal p + p, .legal ul + p { margin-top: 0.5rem; }
+.legal a { color: #0369a1; text-decoration: underline; }

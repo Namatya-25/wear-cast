@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プライバシーポリシー | WearCast</title>
+    <script src="https://kit.fontawesome.com/d4772c3c4b.js" crossorigin="anonymous"></script>
+    <!-- ブラウザのタブとiPhoneのホーム画面に出すアイコン -->
+    <link rel="icon" type="image/png" href="images/wearcast-logo.png">
+    <link rel="apple-touch-icon" href="images/wearcast-logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <div class="min-h-screen bg-gray-100 flex justify-center">
+        <div class="w-full max-w-2xl min-h-screen bg-sky-100 shadow-sm border border-gray-200 flex flex-col">
+            <header class="px-6 pt-4 pb-10">
+                <a href="welcome.html" class="inline-flex items-center gap-1 text-gray-800 text-sm font-medium hover:opacity-60 transition"><i class="fa-solid fa-arrow-left"></i>戻る</a>
+                <h1 class="text-3xl font-medium text-center text-gray-700 mt-2 font-['Zen_Maru_Gothic',sans-serif]">プライバシーポリシー</h1>
+            </header>
+            <!-- ログインしていてもいなくても見られるページ（src/auth.jsのOPEN_PAGES） -->
+            <main class="flex-1 bg-gray-50 rounded-t-3xl -mt-4 px-6 pt-10 pb-12">
+                <div class="legal w-full max-w-xl mx-auto text-gray-700 text-sm leading-relaxed space-y-6">
+                    <p>WearCast（以下「本アプリ」）は、個人が学習・ポートフォリオのために開発・運営しているアプリです。本アプリでの利用者の情報の取り扱いを、次のとおり定めます。</p>
+                    <section>
+                        <h2>1. 集める情報</h2>
+                        <ul>
+                            <li>メールアドレスとパスワード（パスワードはそのまま保存せず、元に戻せない形に変換して保存します）</li>
+                            <li>Googleでログインした場合の、Googleアカウントのメールアドレス</li>
+                            <li>利用者が登録した服の情報（名前・カテゴリー・色・写真など）</li>
+                            <li>天気を調べるために入力された都市名</li>
+                        </ul>
+                        <p>端末の位置情報（GPS）は使いません。</p>
+                    </section>
+                    <section>
+                        <h2>2. 使う目的</h2>
+                        <ul>
+                            <li>ログインと、本人のメールアドレスであることの確認（確認メールの送信）</li>
+                            <li>登録した服の表示と、天気に合わせた服の提案</li>
+                        </ul>
+                        <p>これ以外の目的には使わず、広告や宣伝のメールも送りません。</p>
+                    </section>
+                    <section>
+                        <h2>3. 外部のサービス</h2>
+                        <p>本アプリは次のサービスを使っており、必要な範囲で情報がそれぞれのサービスに送られます。</p>
+                        <ul>
+                            <li>Google（Googleでのログイン、確認メールの送信）</li>
+                            <li>Render（アプリの公開）、TiDB Cloud（データの保存）、Cloudinary（服の写真の保存）</li>
+                            <li>Photon・Nominatim（都市名から場所を調べる）、MET Norway（天気予報）</li>
+                        </ul>
+                        <p>これ以外の第三者に、利用者の情報を売ったり渡したりすることはありません（法令にもとづく場合を除きます）。</p>
+                    </section>
+                    <section>
+                        <h2>4. Googleから受け取る情報</h2>
+                        <p>Googleでのログインでは、Googleアカウントのメールアドレスだけを受け取り、ログインのためだけに使います。本アプリがGoogleのAPIから受け取った情報の使い方は、<a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>（Limited Use の要件を含む）に従います。</p>
+                    </section>
+                    <section>
+                        <h2>5. Cookie</h2>
+                        <p>ログインした状態を保つためだけにCookieを使います。広告や利用状況の分析のためのCookieは使いません。</p>
+                    </section>
+                    <section>
+                        <h2>6. 情報の削除</h2>
+                        <p>登録した服は、アプリの中でいつでも削除できます。アカウントごと削除したい場合は、下のお問い合わせ先までご連絡ください。</p>
+                    </section>
+                    <section>
+                        <h2>7. お問い合わせ</h2>
+                        <p><a href="https://github.com/Namatya-25/wear-cast/issues" target="_blank" rel="noopener">GitHubのIssue</a>からご連絡ください。</p>
+                    </section>
+                    <section>
+                        <h2>8. 変更</h2>
+                        <p>このポリシーを変更する場合は、このページでお知らせします。</p>
+                    </section>
+                    <p class="text-xs text-gray-500">制定日：2026年11月12日</p>
+                </div>
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>

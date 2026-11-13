@@ -21,7 +21,13 @@ function showToast(message) {
 // 再読み込みでもう一度出ないように、URLから ?login=1 を消しておく
 window.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(location.search);
-    if (params.get("login") !== "1") return;
-    showToast("ログインしました！");
+    // メールの確認リンクから来たとき（?verified=1）は「登録が完了しました！」を出す
+    if (params.get("verified") === "1") {
+        showToast("登録が完了しました！");
+    } else if (params.get("login") === "1") {
+        showToast("ログインしました！");
+    } else {
+        return;
+    }
     history.replaceState(null, "", location.pathname);
 });

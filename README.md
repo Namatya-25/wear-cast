@@ -12,6 +12,7 @@
 ## 主な機能
 
 - **ログイン**：メールアドレス＋パスワードでの新規登録・ログイン、Googleアカウントでのログイン（30日間ログイン状態を保持）
+- **メールアドレスの確認**：メールアドレスで新規登録すると確認メール（リンク・24時間有効）が届き、開くと登録完了。確認前はログインできない（再送あり）
 - **天気検索**：都市名を入力すると、現在の気温と天気を表示（天気に合わせて背景も変わる）
 - **おすすめコーディネート**：気温に合う服をカテゴリーごとにランダムで1着ずつ表示（20°C以下のときはアウターも表示）
 - **服の登録**：名前・カテゴリー・色（14色から1つ）・温度区分（複数選択可）・画像を登録。画像はアップロード前にブラウザで縮小
@@ -63,6 +64,8 @@ npm install
 | `BASE_URL` | アプリのURL（GoogleログインのリダイレクトURIに使用。省略時は `http://localhost:3000`） |
 | `SESSION_SECRET` | Cookieの署名に使うランダムな文字列（本番では必須） |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Googleログイン用（無ければGoogleログインだけ使えない） |
+| `MAIL_FROM` / `MAIL_FROM_NAME` / `GMAIL_REFRESH_TOKEN` | 確認メールの送信（Gmail API）。無ければメールを送らず、確認リンクをターミナルに表示する |
+| `GMAIL_CLIENT_ID` / `GMAIL_CLIENT_SECRET` | Gmail API用のOAuthクライアント（省略時は `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` を使用） |
 
 `SESSION_SECRET` は次のコマンドで作れます。
 
@@ -84,6 +87,11 @@ npm start
 - Renderの無料プランは再起動でサーバー内のファイルが消えるため、画像は Cloudinary に保存
 - 上の環境変数を Render の Environment に設定する
 - Googleログインを使う場合は、Google Cloud Console のOAuthクライアントに `BASE_URL/auth/google/callback` をリダイレクトURIとして登録する
+- 確認メールは Gmail API（https）で送る（Renderの無料プランではSMTPが使えないことがあるため）。準備は次のとおり
+  1. Google Cloud Console で「Gmail API」を有効にする
+  2. OAuth同意画面を「本番環境」にする（「テスト」のままだとリフレッシュトークンが7日で切れる）
+  3. OAuthクライアントのリダイレクトURIに `https://developers.google.com/oauthplayground` を追加する
+  4. [OAuth 2.0 Playground](https://developers.google.com/oauthplayground) の歯車から「Use your own OAuth credentials」にチェックしてクライアントID・シークレットを入れ、スコープ `https://www.googleapis.com/auth/gmail.send` で送信用のGmailアカウントを許可し、「Exchange authorization code for tokens」で出た Refresh token を `GMAIL_REFRESH_TOKEN` に設定する
 
 ## API
 
@@ -97,6 +105,8 @@ npm start
 | POST | `/api/login` | メールアドレスでログイン |
 | POST | `/logout` | ログアウト |
 | GET | `/api/me` | ログイン中のユーザー情報 |
+| GET | `/auth/verify?token=〜` | 確認メールのリンク（確認済みにしてログイン） |
+| POST | `/api/resend-verification` | 確認メールの再送（1分に1回まで） |
 | GET | `/auth/google` | Googleログイン開始 |
 | GET | `/auth/google/callback` | Googleログインの戻り先 |
 
@@ -135,7 +145,8 @@ wear-cast/
 ├── server.js              # Expressサーバー・天気/服のAPI
 ├── db/schema.sql          # テーブル作成用SQL
 ├── src/
-│   ├── auth.js            # ログイン・新規登録・Googleログイン・ページの保護
+│   ├── auth.js            # ログイン・新規登録・メール確認・Googleログイン・ページの保護
+│   ├── mail.js            # メールの送信（Gmail API）
 │   └── config/
 │       ├── db.js          # DB接続設定
 │       └── storage.js     # 画像の保存先（ローカル / Cloudinary）
@@ -143,6 +154,7 @@ wear-cast/
     ├── welcome.html       # ようこそ画面（未ログイン時）
     ├── login.html         # ログイン
     ├── signup.html        # 新規登録
+    ├── verify-sent.html   # 確認メールを送ったことのお知らせ・再送
     ├── index.html         # ホーム（天気・おすすめ）
     ├── register.html      # 服の登録
     ├── list.html          # 一覧・絞り込み
@@ -153,3 +165,6 @@ wear-cast/
     ├── images/            # ロゴ・背景画像
     └── uploads/           # アップロードされた画像（ローカルのみ）
 ```
+
+プライバシーポリシー
+当アプリ（ポートフォリオ用アプリケーション）は、Googleアカウントのメール送信機能を利用するためにのみOAuth認証を使用し、取得したデータやトークンを外部に公開・保存・共有することはありません。

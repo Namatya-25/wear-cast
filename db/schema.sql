@@ -33,10 +33,15 @@ CREATE TABLE IF NOT EXISTS wear_cast_db.users (
   email varchar(255) NOT NULL,
   password_hash varchar(255) DEFAULT NULL,
   google_id varchar(255) DEFAULT NULL,
+  email_verified tinyint(1) NOT NULL DEFAULT 0,
+  verify_token_hash varchar(64) DEFAULT NULL,
+  verify_expires_at datetime DEFAULT NULL,
+  verify_sent_at datetime DEFAULT NULL,
   created_at timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (id),
   UNIQUE KEY email (email),
-  UNIQUE KEY google_id (google_id)
+  UNIQUE KEY google_id (google_id),
+  KEY verify_token_hash (verify_token_hash)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 洋服を誰が登録したかを入れる列（すでにテーブルがある場合はこれで追加する）
@@ -45,3 +50,9 @@ CREATE TABLE IF NOT EXISTS wear_cast_db.users (
 -- ログイン機能を入れる前に登録した洋服を、自分のアカウントのものにする
 -- （先にアプリで新規登録して、SELECT id, email FROM wear_cast_db.users; で自分のidを調べてから実行する）
 -- UPDATE wear_cast_db.clothes SET user_id = 自分のid WHERE user_id IS NULL;
+
+-- メールアドレスの確認機能のための列（すでにusersテーブルがある場合はこれで追加する）
+-- email_verified：1なら確認済み。verify_token_hash：確認リンクの合言葉のハッシュ。verify_expires_at：リンクの期限。verify_sent_at：最後に送った時間
+-- ALTER TABLE wear_cast_db.users ADD COLUMN email_verified tinyint(1) NOT NULL DEFAULT 0 AFTER google_id, ADD COLUMN verify_token_hash varchar(64) DEFAULT NULL AFTER email_verified, ADD COLUMN verify_expires_at datetime DEFAULT NULL AFTER verify_token_hash, ADD COLUMN verify_sent_at datetime DEFAULT NULL AFTER verify_expires_at, ADD INDEX verify_token_hash (verify_token_hash);
+-- 確認機能を入れる前に登録した人は、確認済みにしておく（しないとログインできなくなる）
+-- UPDATE wear_cast_db.users SET email_verified = 1;

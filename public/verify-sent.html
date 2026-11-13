@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メールを確認してください</title>
+    <script src="https://kit.fontawesome.com/d4772c3c4b.js" crossorigin="anonymous"></script>
+    <!-- ブラウザのタブとiPhoneのホーム画面に出すアイコン -->
+    <link rel="icon" type="image/png" href="images/wearcast-logo.png">
+    <link rel="apple-touch-icon" href="images/wearcast-logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="auth-form.js"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <div class="min-h-screen bg-gray-100 flex justify-center">
+        <div class="w-full max-w-2xl min-h-screen bg-sky-100 shadow-sm border border-gray-200 flex flex-col">
+            <header class="px-6 pt-4 pb-10">
+                <a href="welcome.html" class="inline-flex items-center gap-1 text-gray-800 text-sm font-medium hover:opacity-60 transition"><i class="fa-solid fa-arrow-left"></i>戻る</a>
+                <h1 class="text-3xl font-medium text-center text-gray-700 mt-2 font-['Zen_Maru_Gothic',sans-serif]">メールを確認</h1>
+            </header>
+            <!-- 水色のヘッダーに、上の角が丸い灰色のパネルを重ねる -->
+            <main class="flex-1 bg-gray-50 rounded-t-3xl -mt-4 px-6 pt-10 pb-12">
+                <div class="w-full max-w-sm mx-auto text-center">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-[#4FC3F7] text-white flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+                    <p class="mt-6 text-gray-800">
+                        <span id="sent-email" class="font-medium break-all"></span><br>
+                        に確認メールを送りました。
+                    </p>
+                    <p class="mt-4 text-sm text-gray-600 leading-relaxed">
+                        メールの中のリンクを開くと、登録が完了します。<br>
+                        リンクの有効期限は24時間です。
+                    </p>
+                    <p class="mt-4 text-xs text-gray-500 leading-relaxed">
+                        メールが届かないときは、迷惑メールフォルダも確認してください。
+                    </p>
+
+                    <p id="resend-message" class="text-sm text-gray-700 mt-8 min-h-5" role="status"></p>
+                    <button id="resend-button" type="button"
+                        class="block w-full max-w-[14rem] mx-auto mt-3 py-3 rounded-full bg-gray-600 text-white font-medium hover:opacity-80 transition disabled:opacity-50">確認メールを再送する</button>
+
+                    <a href="login.html" class="inline-block mt-8 text-sm text-sky-700 underline hover:opacity-60 transition">ログイン画面へ</a>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script>
+        const email = new URLSearchParams(location.search).get("email") || "";
+        document.getElementById("sent-email").textContent = email || "ご登録のメールアドレス";
+
+        const button = document.getElementById("resend-button");
+        const message = document.getElementById("resend-message");
+        if (!email) button.classList.add("hidden");
+
+        button.addEventListener("click", () => {
+            button.disabled = true;
+            message.textContent = "";
+            resendVerification(email)
+                .then(() => { message.textContent = "確認メールを送り直しました"; })
+                .catch(err => { message.textContent = err.message; })
+                .finally(() => { button.disabled = false; });
+        });
+    </script>
+</body>
+
+</html>
