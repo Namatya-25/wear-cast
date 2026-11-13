@@ -1,2 +1,4 @@
 node_modules/
 .env
+# ローカルで登録した洋服の写真（本番はCloudinaryに保存する）
+public/uploads/
