@@ -92,35 +92,70 @@ app.get("/api/clothes/:id", (req, res) => {
 
 
 //編集画面からの更新API（画像は新しく選ばれたときだけ差し替える）
+// 写真を差し替えたときは、更新が成功したら前の写真を消す（Cloudinaryに使わない画像がたまらないように）
+// 更新に失敗したときは、今受け取った新しい写真のほうを消す
 app.put("/api/clothes/:id", uploadImage, async (req, res) => {
     const {name, category, color, temperature} = req.body;
+
+    // 先に今の写真の場所を読む（自分の服でなければここで404にする。まだCloudinaryには何も上げていない）
+    let oldImagePath;
+    try {
+        const [rows] = await db.promise().query(
+            "SELECT image_path FROM clothes WHERE id = ? AND user_id = ?",
+            [req.params.id, req.session.userId]
+        );
+        if (rows.length === 0) {
+            discardUpload(req.file);
+            return res.status(404).send("見つかりません");
+        }
+        oldImagePath = rows[0].image_path;
+    } catch (err) {
+        console.error(err);
+        discardUpload(req.file);
+        return res.status(500).send("更新に失敗しました");
+    }
 
     let sql = "UPDATE clothes SET name = ?, category = ?, color = ?, temperature = ? WHERE id = ? AND user_id = ?";
     let values = [name, category, color, temperature, req.params.id, req.session.userId];
 
+    let newImagePath = null;
     if (req.file) {
-        let imagePath;
         try {
-            imagePath = await saveImage(req.file);
+            newImagePath = await saveImage(req.file);
         } catch (err) {
             console.error(err);
+            discardUpload(req.file);
             return res.status(500).send("画像の保存に失敗しました");
         }
         sql = "UPDATE clothes SET name = ?, category = ?, color = ?, temperature = ?, image_path = ? WHERE id = ? AND user_id = ?";
-        values = [name, category, color, temperature, imagePath, req.params.id, req.session.userId];
+        values = [name, category, color, temperature, newImagePath, req.params.id, req.session.userId];
     }
 
-    db.query(sql, values, (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send("更新に失敗しました");
-        }
+    try {
+        const [result] = await db.promise().query(sql, values);
         if (result.affectedRows === 0) {
+            // 読んだあとに消された場合など。新しい写真は使われないので消す
+            deleteImage(newImagePath);
             return res.status(404).send("見つかりません");
         }
-        res.send("服を更新しました");
-    });
+    } catch (err) {
+        console.error(err);
+        deleteImage(newImagePath);
+        return res.status(500).send("更新に失敗しました");
+    }
+
+    // 更新できたので、差し替えた場合だけ前の写真を消す（失敗しても更新は成功扱い。ログだけ出る）
+    if (newImagePath && oldImagePath && oldImagePath !== newImagePath) {
+        deleteImage(oldImagePath);
+    }
+    res.send("服を更新しました");
 });
+
+// ローカルでは写真を受け取った時点でpublic/uploads/に保存されているので、使わなくなったら消す
+// （本番はメモリに入れているだけなので、何もしなくてよい）
+function discardUpload(file) {
+    if (file && file.filename) deleteImage("/uploads/" + file.filename);
+}
 
 
 //お気に入りの切り替えAPI（一覧・詳細の星ボタンから {favorite: true/false} が送られてくる）
