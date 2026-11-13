@@ -10,9 +10,43 @@ const cloudinary = require("cloudinary").v2;
 const useCloudinary = !!process.env.CLOUDINARY_URL;
 const FOLDER = "wear-cast";
 
-const upload = useCloudinary
-    ? multer({ storage: multer.memoryStorage() })
-    : multer({ dest: "public/uploads/" });
+// 写真はブラウザで縮めてから送るのでふつうは1MBもないが、縮められない写真（HEICなど）はそのまま来るので10MBまでにする
+// 本番ではいったんメモリに入れるので、上限が無いと大きなファイルでサーバーのメモリが足りなくなる
+const MAX_IMAGE_MB = 10;
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"];
+
+const upload = multer({
+    storage: useCloudinary ? multer.memoryStorage() : multer.diskStorage({ destination: "public/uploads/" }),
+    limits: {
+        fileSize: MAX_IMAGE_MB * 1024 * 1024,
+        files: 1,       // 写真は1枚だけ
+        fields: 10,     // 写真以外の項目（名前・カテゴリーなど）の数
+        fieldSize: 10 * 1024 // 写真以外の項目は1つ10KBまで
+    },
+    // 画像以外のファイルは受け取らない
+    fileFilter: (req, file, cb) => {
+        if (IMAGE_TYPES.includes(file.mimetype)) return cb(null, true);
+        const err = new Error("画像はJPEG・PNG・WebP・GIF・HEICのどれかを選んでください");
+        err.status = 400;
+        cb(err);
+    }
+});
+
+// 写真を1枚受け取る（name="image"）。大きすぎる・画像ではないときは、500ではなく400で理由を返す
+function uploadImage(req, res, next) {
+    upload.single("image")(req, res, (err) => {
+        if (!err) return next();
+        if (err instanceof multer.MulterError) {
+            const message = err.code === "LIMIT_FILE_SIZE"
+                ? `画像は${MAX_IMAGE_MB}MBまでにしてください`
+                : "送られたデータが正しくありません";
+            return res.status(400).send(message);
+        }
+        if (err.status === 400) return res.status(400).send(err.message);
+        console.error(err);
+        res.status(500).send("画像の受け取りに失敗しました");
+    });
+}
 
 // アップロードされた画像を保存して、DBに入れるパス（またはURL）を返す
 function saveImage(file) {
@@ -48,4 +82,4 @@ function deleteImage(imagePath) {
     });
 }
 
-module.exports = { upload, saveImage, deleteImage };
+module.exports = { uploadImage, saveImage, deleteImage };

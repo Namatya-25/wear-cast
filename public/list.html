@@ -161,9 +161,11 @@
 
                 li.innerHTML = `
                         <a href="detail.html?id=${item.id}" class="block p-2 border rounded         hover:bg-sky-200 transition ease-in">
-                        ${imgTag}<p class="mt-2" style="text-align: center;">${item.name}</p>
+                        ${imgTag}<p class="clothes-name mt-2" style="text-align: center;"></p>
                     </a>
                     ${item.is_favorite ? favoriteMarkHtml("absolute top-3 right-3") : ""}`;
+                // 名前は自分で入力したものなので、HTMLとして読まれないようにtextContentで入れる（<script>などを入れられても動かない）
+                li.querySelector(".clothes-name").textContent = item.name;
 
                 list.appendChild(li);
             });

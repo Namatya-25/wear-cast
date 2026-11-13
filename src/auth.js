@@ -3,6 +3,17 @@ const crypto = require("crypto");
 const cookieSession = require("cookie-session");
 const db = require("./config/db.js");
 const { sendVerificationEmail } = require("./mail.js");
+const { createLimiter, sendTooMany } = require("./rate-limit.js");
+
+// ---------- 回数制限 ----------
+// ログイン：同じIPから15分に10回まで、同じメールアドレスへは15分に5回まで（成功したらメールアドレスの数は0に戻す）
+//   パスワードを調べる前に数えるので、同時にたくさん送られても上限より多くは試せない
+// 新規登録・確認メールの再送：メールを送るので、同じIPから合わせて1時間に5回まで
+//   （同じメールアドレスへの再送は、これとは別に1分に1回まで。RESEND_WAIT_SECONDS）
+const MINUTE = 60 * 1000;
+const loginIpLimiter = createLimiter({ windowMs: 15 * MINUTE, max: 10 });
+const loginEmailLimiter = createLimiter({ windowMs: 15 * MINUTE, max: 5 });
+const mailIpLimiter = createLimiter({ windowMs: 60 * MINUTE, max: 5 });
 
 // アプリのURL（GoogleのログインのあとにGoogleが戻ってくる先に使う）。本番では https://〜.onrender.com を入れる
 const BASE_URL = (process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`).replace(/\/$/, "");
@@ -106,6 +117,8 @@ async function signup(req, res) {
     if (typeof password !== "string" || !PASSWORD_PATTERN.test(password)) {
         return res.status(400).send("パスワードは8〜20字の半角英数字で設定してください");
     }
+    const wait = mailIpLimiter.hit(req.ip);
+    if (wait) return sendTooMany(res, wait);
 
     try {
         const passwordHash = await hashPassword(password);
@@ -197,6 +210,8 @@ async function resendVerification(req, res) {
     if (!EMAIL_PATTERN.test(email)) {
         return res.status(400).send("メールアドレスを正しく入力してください");
     }
+    const wait = mailIpLimiter.hit(req.ip);
+    if (wait) return sendTooMany(res, wait);
 
     try {
         const [rows] = await db.promise().query(
@@ -228,6 +243,10 @@ async function login(req, res) {
     if (!email || typeof password !== "string" || !password) {
         return res.status(400).send("メールアドレスとパスワードを入力してください");
     }
+    // IPとメールアドレスの両方を数える（片方だけ数えて、もう片方を数え忘れないように先に両方hitする）
+    const ipWait = loginIpLimiter.hit(req.ip);
+    const emailWait = loginEmailLimiter.hit(email);
+    if (ipWait || emailWait) return sendTooMany(res, Math.max(ipWait, emailWait));
 
     try {
         const [rows] = await db.promise().query(
@@ -241,6 +260,8 @@ async function login(req, res) {
         if (!(await verifyPassword(password, user.password_hash))) {
             return res.status(401).send(failMessage);
         }
+        // パスワードが合っていたら、このメールアドレスの数は0に戻す（本人が少し間違えただけなら、すぐまた試せる）
+        loginEmailLimiter.reset(email);
         // パスワードは合っているが、メールアドレスの確認がまだ（画面に再送ボタンを出すので403で返す）
         if (!user.email_verified) {
             return res.status(403).send("メールアドレスの確認がまだです。届いたメールのリンクを開いてください");

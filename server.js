@@ -3,7 +3,7 @@ const app = express();
 const db = require("./src/config/db.js");
 // Renderではポート番号が環境変数PORTで渡される
 const port = process.env.PORT || 3000;
-const { upload, saveImage, deleteImage } = require("./src/config/storage.js");
+const { uploadImage, saveImage, deleteImage } = require("./src/config/storage.js");
 const auth = require("./src/auth.js");
 
 // Renderは前にプロキシがあるので、httpsで来たことをExpressに伝える（secureなCookieを使うため）
@@ -29,7 +29,7 @@ app.listen(port, () => {
 });
 
 //画像アップロード機能付きの登録API
-app.post("/add-clothes", upload.single("image"), async (req, res) => {
+app.post("/add-clothes", uploadImage, async (req, res) => {
     const {name, category, color, temperature} = req.body;
 
     // 必須項目のチェック（名前・服の種類・色・温度）
@@ -92,7 +92,7 @@ app.get("/api/clothes/:id", (req, res) => {
 
 
 //編集画面からの更新API（画像は新しく選ばれたときだけ差し替える）
-app.put("/api/clothes/:id", upload.single("image"), async (req, res) => {
+app.put("/api/clothes/:id", uploadImage, async (req, res) => {
     const {name, category, color, temperature} = req.body;
 
     let sql = "UPDATE clothes SET name = ?, category = ?, color = ?, temperature = ? WHERE id = ? AND user_id = ?";

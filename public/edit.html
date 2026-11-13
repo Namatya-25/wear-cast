@@ -174,8 +174,9 @@
                 method: "PUT",
                 body: formData
             }).then(res => {
+                // サーバー側でエラーになった場合は理由を出して止める（画像が大きすぎるなど）
                 if (!res.ok) {
-                    throw new Error("更新に失敗しました");
+                    return res.text().then((message) => alert(message));
                 }
                 // 更新したら絞り込みを解除した全件の一覧に戻す
                 showDoneModal("洋服を更新しました！", "list.html");
