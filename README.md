@@ -6,7 +6,7 @@
 
 ## デモ動画
 
-<img width="360" height="778" alt="wearcast-demo" src="https://github.com/user-attachments/assets/68bde7ee-78b1-4500-b8fc-fd6d43b0f9cf" />
+![Uploading wearcast-demo-v5.gif…]()
 
 
 ## 作った理由
