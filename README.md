@@ -139,6 +139,37 @@ npm start
 | 肌寒い日用 | 16°C〜20°C |
 | 寒い日用 | 15°C以下 |
 
+## ER図
+
+テーブルの作り方は `db/schema.sql` を参照。ユーザー1人が服を0着以上登録できる（1対多）。
+
+```mermaid
+erDiagram
+    users ||--o{ clothes : "登録する"
+    users {
+        int id PK
+        varchar email UK "メールアドレス"
+        varchar password_hash "メール登録の人だけ"
+        varchar google_id UK "Googleログインの人だけ"
+        tinyint email_verified "1なら確認済み"
+        varchar verify_token_hash "確認リンクの合言葉のハッシュ"
+        datetime verify_expires_at "確認リンクの期限"
+        datetime verify_sent_at "最後に確認メールを送った時間"
+        timestamp created_at
+    }
+    clothes {
+        int id PK
+        int user_id FK "登録した人"
+        varchar name "50文字まで"
+        varchar category "トップス・ボトムス・アウター"
+        varchar color "14色から1つ"
+        varchar temperature "温度区分（カンマ区切りで複数）"
+        varchar image_path "写真のURL"
+        tinyint is_favorite "1ならお気に入り"
+        timestamp created_at
+    }
+```
+
 ## ディレクトリ構成
 
 ```
