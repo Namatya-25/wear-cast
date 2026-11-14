@@ -6,8 +6,18 @@
 
 ## デモ動画
 
-<img width="360" height="778" alt="wearcast-demo-v5" src="https://github.com/user-attachments/assets/062aa83b-1019-4b13-8cbb-e58ba022c66a" />
+<table>
+  <tr>
+    <td>
+      <img width="360" height="778" alt="wearcast-demo-v5" src="https://github.com/user-attachments/assets/062aa83b-1019-4b13-8cbb-e58ba022c66a" />
+    </td>
+    <td align="center" valign="middle">
+      <img width="216" height="216" alt="アプリqrコード" src="https://github.com/user-attachments/assets/b06f85f2-f207-48e0-8050-8aeaf90ff4c5" />
+    </td>
+  </tr>
+</table>
 
+## URL:https://wear-cast.onrender.com
 
 ## 作った理由
 
