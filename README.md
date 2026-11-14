@@ -1,3 +1,4 @@
+<img width="3604" height="3619" alt="スマホ画面 (1)" src="https://github.com/user-attachments/assets/836e5a2a-63f4-4367-be37-5c82d84c9f17" />
 # WearCast
 
 今日の天気と気温に合わせて、手持ちの服からコーディネートを提案するWebアプリです。
@@ -144,6 +145,7 @@ npm start
 <img width="6529" height="4097" alt="PC画面" src="https://github.com/user-attachments/assets/14c4a6ba-242c-4010-b500-4678b925e15b" />
 <img width="3604" height="4097" alt="スマホ画面" src="https://github.com/user-attachments/assets/5678f954-fa23-4e55-afeb-2df131c408d3" />
 
+<img width="3604" height="3619" alt="スマホ画面 (1)" src="https://github.com/user-attachments/assets/c68eee45-1e28-45b5-85b7-66d9fb10ac35" />
 
 
 ## ER図
