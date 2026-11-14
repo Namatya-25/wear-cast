@@ -12,7 +12,7 @@
 /* クリーム色の背景に紙の質感を重ねる */
 .paper-bg {
     background-color: #FBF7EF;
-    background-image: url("images/paper-texture.jpeg");
+    background-image: url("../images/paper-texture.jpeg");
     background-blend-mode: multiply;
 }
 
@@ -179,7 +179,7 @@ select option {
 /* 最初の画面(welcome.html)の背景：縦長の画面はスマホ用、横長の画面はPC用の風景にする */
 /* 画面に入りきらないときは空のほうを切る（下の芝生と物干しは必ず見えるように下にそろえる） */
 .welcome-scene {
-    background-image: url("images/welcome-scene.webp");
+    background-image: url("../images/welcome-scene.webp");
     background-position: center bottom;
 }
 
@@ -191,7 +191,7 @@ select option {
 
 @media (orientation: landscape) {
     .welcome-scene {
-        background-image: url("images/welcome-scene-pc.webp");
+        background-image: url("../images/welcome-scene-pc.webp");
     }
 
     .welcome-heading {

@@ -1,6 +1,6 @@
 // 服の登録・更新で送られてきた値を確かめる
 // 画面では選ぶ形にしているが、画面を通さずに直接送られることもあるので、サーバーでも確かめる
-// 値の一覧は画面と同じにしておく（カテゴリーと温度：register.html・edit.html、色：public/color-picker.js）
+// 値の一覧は画面と同じにしておく（カテゴリーと温度：register.html・edit.html、色：public/js/color-picker.js）
 
 const NAME_MAX_LENGTH = 50;
 const CATEGORIES = ["トップス", "アウター", "ボトムス"];

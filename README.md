@@ -205,28 +205,43 @@ erDiagram
 
 ```
 wear-cast/
-├── server.js              # Expressサーバー・天気/服のAPI
-├── db/schema.sql          # テーブル作成用SQL
+├── server.js               # Expressサーバー・天気/服のAPI
+├── .env.example            # 環境変数の一覧（本番で設定するもの）
+├── db/schema.sql           # テーブル作成用SQL
 ├── src/
-│   ├── auth.js            # ログイン・新規登録・メール確認・Googleログイン・ページの保護
-│   ├── mail.js            # メールの送信（Gmail API）
+│   ├── auth.js             # ログイン・新規登録・メール確認・Googleログイン・ページの保護
+│   ├── mail.js             # メールの送信（Gmail API）
+│   ├── rate-limit.js       # 回数制限（ログイン・新規登録・確認メールの再送）
+│   ├── validate-clothes.js # 服の登録・更新の入力チェック
 │   └── config/
-│       ├── db.js          # DB接続設定
-│       └── storage.js     # 画像の保存先（ローカル / Cloudinary）
-└── public/                # 画面（静的ファイル）
-    ├── welcome.html       # ようこそ画面（未ログイン時）
-    ├── login.html         # ログイン
-    ├── signup.html        # 新規登録
-    ├── verify-sent.html   # 確認メールを送ったことのお知らせ・再送
-    ├── index.html         # ホーム（天気・おすすめ）
-    ├── register.html      # 服の登録
-    ├── list.html          # 一覧・絞り込み
-    ├── detail.html        # 詳細
-    ├── edit.html          # 編集
-    ├── *.js               # 共通スクリプト（色選択、お気に入り、画像縮小、トースト、モーダルなど）
-    ├── style.css
-    ├── images/            # ロゴ・背景画像
-    └── uploads/           # アップロードされた画像（ローカルのみ）
+│       ├── db.js           # DB接続設定
+│       └── storage.js      # 画像の保存先（ローカル / Cloudinary）・アップロードの制限
+└── public/                 # 画面（静的ファイル）
+    ├── welcome.html        # ようこそ画面（未ログイン時）
+    ├── login.html          # ログイン
+    ├── signup.html         # 新規登録
+    ├── verify-sent.html    # 確認メールを送ったことのお知らせ・再送
+    ├── index.html          # ホーム（天気・おすすめ）
+    ├── register.html       # 服の登録
+    ├── list.html           # 一覧・絞り込み
+    ├── detail.html         # 詳細
+    ├── edit.html           # 編集
+    ├── privacy.html        # プライバシーポリシー
+    ├── terms.html          # 利用規約
+    ├── js/                 # 画面で使う共通スクリプト
+    │   ├── auth-check.js   # ログアウト後に「戻る」で戻ったときの対策
+    │   ├── auth-form.js    # ログイン・新規登録の送信
+    │   ├── color-picker.js # 色選び
+    │   ├── favorite.js     # お気に入りの星
+    │   ├── loading.js      # 読み込み中の画面
+    │   ├── modal.js        # 登録・更新が終わったときのお知らせ
+    │   ├── resize.js       # 写真を送る前に縮小
+    │   ├── toast.js        # 画面の上に出る小さいお知らせ
+    │   └── weather-icons.js # 天気のアイコン
+    ├── css/
+    │   └── style.css
+    ├── images/             # ロゴ・天気の背景画像
+    └── uploads/            # アップロードされた画像（ローカルのみ・Gitには入れない）
 ```
 
 ## 今後やりたいこと
