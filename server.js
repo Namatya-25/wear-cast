@@ -333,14 +333,22 @@ app.get("/api/recommend", async (req, res) => {
     const categories = { tops: "トップス", bottoms: "ボトムス" };
     if (temperature <= 20) categories.outer = "アウター";
 
+    // シャッフルのときは今出ている服のidが来るので、なるべく別の服を選ぶ（ほかに無ければ同じ服になる）
+    const exclude = String(req.query.exclude || "")
+        .split(",")
+        .map(Number)
+        .filter(id => Number.isInteger(id) && id > 0);
+    if (exclude.length === 0) exclude.push(0);
+
     try {
         // 温度はカンマ区切りで複数入っているので、FIND_IN_SETでその中に含まれているかを調べる
-        const sql = "SELECT id, name, category, image_path FROM clothes WHERE user_id = ? AND FIND_IN_SET(?, temperature) AND category = ? ORDER BY RAND() LIMIT 1";
+        // 「id IN (...)」は今出ている服だと1になるので、それ以外の服が先に並ぶ
+        const sql = "SELECT id, name, category, image_path FROM clothes WHERE user_id = ? AND FIND_IN_SET(?, temperature) AND category = ? ORDER BY id IN (?), RAND() LIMIT 1";
         const result = { label };
 
         // 服が登録されていないカテゴリーはnullにする
         for (const [key, category] of Object.entries(categories)) {
-            const [rows] = await db.promise().query(sql, [req.session.userId, label, category]);
+            const [rows] = await db.promise().query(sql, [req.session.userId, label, category, exclude]);
             result[key] = rows[0] || null;
         }
         res.json(result);

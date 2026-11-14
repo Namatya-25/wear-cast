@@ -71,6 +71,10 @@
                         <h2 class="text-base md:text-lg font-medium text-center leading-snug mb-4 md:mb-6 font-['Zen_Maru_Gothic',sans-serif]">今日のおすすめ<br>コーディネート</h2>
                         <div id="recommend-list" class="w-full flex flex-col items-center gap-2"></div>
                         <p id="recommend-error" class="text-red-600 text-sm"></p>
+                        <!-- 気に入らなかったら別の組み合わせを出す（showRecommendでボトムスの左下に移す・服が1着も無いときは出さない） -->
+                        <button type="button" id="recommend-shuffle" class="hidden shrink-0 whitespace-nowrap px-3 py-1 rounded-full bg-[#4FC3F7] text-white text-xs font-medium items-center gap-1 hover:opacity-80 transition outline-none focus-visible:ring-2 focus-visible:ring-sky-300 disabled:opacity-50">
+                            <i class="fa-solid fa-shuffle"></i>選びなおす
+                        </button>
                     </div>
                 </div>
             </main>
@@ -141,18 +145,37 @@
                 }
 
                 //気温に合わせたおすすめの服を表示(server.jsの/api/recommendに対応)
-                function showRecommend(temperature) {
+                //シャッフルで使うので、今の気温と表示中の服のidを覚えておく
+                let currentTemperature = null;
+                let currentIds = [];
+                //ボタンはおすすめの一覧の中に移すので、消えても使えるように最初に取っておく
+                const shuffleButton = document.getElementById("recommend-shuffle");
+
+                function showRecommend(temperature, shuffle = false) {
                     const list = document.getElementById("recommend-list");
                     const error = document.getElementById("recommend-error");
-                    list.innerHTML = "";
                     error.textContent = "";
+                    currentTemperature = temperature;
 
-                    fetch(`/api/recommend?temperature=${temperature}`)
+                    // シャッフルのときは今の服を残したまま待つ（画面がちらつかないように）
+                    if (!shuffle) {
+                        list.innerHTML = "";
+                        currentIds = [];
+                        shuffleButton.classList.add("hidden");
+                        shuffleButton.classList.remove("flex");
+                    }
+                    shuffleButton.disabled = true;
+
+                    let url = `/api/recommend?temperature=${temperature}`;
+                    if (shuffle && currentIds.length > 0) url += `&exclude=${currentIds.join(",")}`;
+
+                    fetch(url)
                         .then(res => {
                             if (!res.ok) return res.text().then(msg => { throw new Error(msg); });
                             return res.json();
                         })
                         .then(data => {
+                            list.innerHTML = "";
                             // 表示する順番（アウターは20°C以下のときだけ返ってくる）
                             const items = [
                                 { key: "outer", category: "アウター" },
@@ -168,14 +191,56 @@
                                     plus.className = "text-xl";
                                     list.appendChild(plus);
                                 }
-                                list.appendChild(createRecommendItem(data[key], category));
+                                const item = createRecommendItem(data[key], category);
+
+                                // 最後（ボトムス）の左に、下の端をそろえて「選びなおす」ボタンを置く
+                                // 横の位置は気温の真ん中に合わせる（positionShuffleButton）・画像は上の服と同じく真ん中のまま
+                                if (index === items.length - 1) {
+                                    const row = document.createElement("div");
+                                    row.className = "relative";
+                                    shuffleButton.classList.add("absolute", "bottom-0");
+                                    row.append(item, shuffleButton);
+                                    list.appendChild(row);
+                                } else {
+                                    list.appendChild(item);
+                                }
                             });
+
+                            // 1着でも出ていれば選びなおせるようにする
+                            currentIds = items.map(({ key }) => data[key]).filter(Boolean).map(item => item.id);
+                            shuffleButton.classList.toggle("hidden", currentIds.length === 0);
+                            shuffleButton.classList.toggle("flex", currentIds.length > 0);
+                            positionShuffleButton();
                         })
                         .catch(err => {
                             console.error("おすすめ取得エラー:", err);
                             error.textContent = err.message;
-                        });
+                        })
+                        .finally(() => { shuffleButton.disabled = false; });
                 }
+
+                //「選びなおす」ボタンの横の真ん中を、気温の数字の真ん中にそろえる
+                //画面の幅で位置が変わるので、表示したときと画面の大きさが変わったときに計算し直す
+                function positionShuffleButton() {
+                    const row = shuffleButton.parentElement;
+                    if (!row || shuffleButton.classList.contains("hidden")) return;
+                    const temperatureRect = document.getElementById("weather-temperature").getBoundingClientRect();
+                    const center = temperatureRect.left + temperatureRect.width / 2;
+                    // 見た目でそろって見えるように、少し右（12px）にずらす
+                    const left = center - row.getBoundingClientRect().left - shuffleButton.offsetWidth / 2 + 12;
+                    shuffleButton.style.left = `${left}px`;
+                }
+                // アイコンやフォントがあとから読み込まれると、ボタンや気温の幅が変わって位置がずれる
+                // なので、ボタン・気温・ページの大きさが変わるたびに合わせ直す
+                const shuffleObserver = new ResizeObserver(positionShuffleButton);
+                shuffleObserver.observe(shuffleButton);
+                shuffleObserver.observe(document.getElementById("weather-temperature"));
+                shuffleObserver.observe(document.documentElement);
+
+                //シャッフルボタンを押したら、今と違う組み合わせを出す
+                document.getElementById("recommend-shuffle").addEventListener("click", () => {
+                    if (currentTemperature !== null) showRecommend(currentTemperature, true);
+                });
 
                 //おすすめの服1着分の表示を作る（画像のみ）（登録が無ければメッセージを出す）
                 function createRecommendItem(item, category) {
