@@ -139,6 +139,13 @@ npm start
 | 肌寒い日用 | 16°C〜20°C |
 | 寒い日用 | 15°C以下 |
 
+##画面設計
+
+<img width="6529" height="4097" alt="PC画面" src="https://github.com/user-attachments/assets/14c4a6ba-242c-4010-b500-4678b925e15b" />
+<img width="3604" height="4097" alt="スマホ画面" src="https://github.com/user-attachments/assets/5678f954-fa23-4e55-afeb-2df131c408d3" />
+
+
+
 ## ER図
 
 テーブルの作り方は `db/schema.sql` を参照。ユーザー1人が服を0着以上登録できる（1対多）。
